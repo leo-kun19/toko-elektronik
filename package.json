@@ -14,6 +14,9 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && npm run build",
+    "start:production": "concurrently \"npm run serve:frontend\" \"npm run start:backend\"",
+    "serve:frontend": "cd frontend && npm run preview -- --host 0.0.0.0 --port $PORT",
+    "start:backend": "cd backend && npm run start",
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && npm install",
     "install:all": "npm run install:frontend && npm run install:backend",
@@ -47,10 +50,11 @@
   "author": "Tim Toko Elektronik",
   "contributors": [
     "Leo (Project Manager)",
-    "Nisa (UI/UX Designer)", 
+    "Nisa (UI/UX Designer)",
     "Aulia (Frontend Developer)",
     "Dini (Backend Developer)",
-    "Diki (Product & Financial Manager)"
+    "Diki (Product & Financial Manager)",
+    "Syam (Product & Financial Manager Support)"
   ],
   "license": "UNLICENSED"
 }

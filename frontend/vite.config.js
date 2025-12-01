@@ -7,5 +7,17 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    proxy: {
+      // Proxy untuk API backend
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      // Proxy untuk gambar dari backend
+      '/images': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
 });

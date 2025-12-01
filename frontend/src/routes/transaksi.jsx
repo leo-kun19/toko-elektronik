@@ -1,22 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Calendar, Filter, Eye, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import Button from "../components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import { barangMasukAPI, barangKeluarAPI } from "../services/api";
 
 export default function Transaksi() {
   const [page, setPage] = useState(1);
   const perPage = 5;
+  const [transaksiData, setTransaksiData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPemasukan, setTotalPemasukan] = useState(0);
+  const [totalPengeluaran, setTotalPengeluaran] = useState(0);
 
-  const transaksiData = [
-    { id: 1, nama: "Kulkas Samsung", jumlah: 115, total: "$121.00", status: "Pengeluaran" },
-    { id: 2, nama: "Kipas Angin Kematian", jumlah: 35, total: "$590.00", status: "Pengeluaran" },
-    { id: 3, nama: "Lampu Phillips", jumlah: 150, total: "$607.00", status: "Pemasukan" },
-  ];
+  useEffect(() => {
+    fetchTransaksi();
+  }, []);
+
+  const fetchTransaksi = async () => {
+    try {
+      setLoading(true);
+      const [masukRes, keluarRes] = await Promise.all([
+        barangMasukAPI.getAll(),
+        barangKeluarAPI.getAll()
+      ]);
+
+      const masukData = masukRes.success ? masukRes.data.map(item => ({
+        id: `masuk-${item.barang_masuk_id}`,
+        nama: item.nama_barang,
+        jumlah: item.jumlah,
+        total: item.total_harga,
+        status: "Pemasukan",
+        tanggal: item.tanggal
+      })) : [];
+
+      const keluarData = keluarRes.success ? keluarRes.data.map(item => ({
+        id: `keluar-${item.barang_keluar_id}`,
+        nama: item.nama_barang,
+        jumlah: item.jumlah,
+        total: item.total_harga,
+        status: "Pengeluaran",
+        tanggal: item.tanggal
+      })) : [];
+
+      const combined = [...masukData, ...keluarData].sort((a, b) => 
+        new Date(b.tanggal) - new Date(a.tanggal)
+      );
+
+      setTransaksiData(combined);
+
+      // Calculate totals
+      const pemasukan = masukData.reduce((sum, item) => sum + item.total, 0);
+      const pengeluaran = keluarData.reduce((sum, item) => sum + item.total, 0);
+      setTotalPemasukan(pemasukan);
+      setTotalPengeluaran(pengeluaran);
+    } catch (err) {
+      console.error("Error fetching transaksi:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalPages = Math.ceil(transaksiData.length / perPage);
   const startIndex = (page - 1) * perPage;
   const endIndex = Math.min(startIndex + perPage, transaksiData.length);
   const transaksi = transaksiData.slice(startIndex, endIndex);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 mt-10">
@@ -48,8 +103,8 @@ export default function Transaksi() {
             <CardTitle className="text-white">Pengeluaran</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-0.5">Rp 124.000.000</h2>
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md">0%</span>
+            <h2 className="text-2xl font-bold mb-0.5">Rp {totalPengeluaran.toLocaleString('id-ID')}</h2>
+            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md">Total</span>
           </CardContent>
         </Card>
 
@@ -59,8 +114,8 @@ export default function Transaksi() {
             <CardTitle className="text-white">Pemasukan</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-0.5">Rp 225.000.000</h2>
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md">-25%</span>
+            <h2 className="text-2xl font-bold mb-0.5">Rp {totalPemasukan.toLocaleString('id-ID')}</h2>
+            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-md">Total</span>
           </CardContent>
         </Card>
       </div>
@@ -99,7 +154,7 @@ export default function Transaksi() {
                 >
                   <td className="px-6 py-4 rounded-l-xl">{item.nama}</td>
                   <td className="px-6 py-4">{item.jumlah}</td>
-                  <td className="px-6 py-4 font-medium">{item.total}</td>
+                  <td className="px-6 py-4 font-medium">Rp {item.total.toLocaleString('id-ID')}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${

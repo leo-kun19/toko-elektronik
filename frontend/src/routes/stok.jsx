@@ -8,6 +8,7 @@ import {
 } from "../components/ui/card";
 import Button from "../components/ui/button";
 import { useAppContext } from "../store";
+import TambahBarangModal from "../components/modals/TambahBarangModal";
 import {
   Search,
   Edit2,
@@ -33,6 +34,10 @@ export default function StokPage() {
     deleteBarangMasuk,
     deleteBarangKeluar,
     deleteStokBarang,
+    editStokBarang,
+    refreshData,
+    loading,
+    error,
   } = useAppContext();
 
   // ======= UI State (filter, modal, pagination) tetap lokal =======
@@ -50,6 +55,7 @@ export default function StokPage() {
 
   const [modalType, setModalType] = useState(null);
   const [activeItem, setActiveItem] = useState(null);
+  const [showTambahModal, setShowTambahModal] = useState(false);
 
   const [showGlobalDateDropdown, setShowGlobalDateDropdown] = useState(false);
   const [showMasukDateDropdown, setShowMasukDateDropdown] = useState(false);
@@ -152,6 +158,19 @@ export default function StokPage() {
     if (type === "addStok") {
       setStokForm(emptyStokForm);
       setSelectedFile(null);
+    } else if (type === "editStok" && item) {
+      setStokForm({
+        brand: item.brand || "",
+        kategori: item.kategori,
+        supplier: item.supplier,
+        nama: item.nama,
+        deskripsi: item.deskripsi,
+        harga: item.harga,
+        stok: item.stok,
+        tanggal: item.tanggal || "",
+        gambar: item.gambar || "/src/assets/produk.jpg",
+      });
+      setSelectedFile(null);
     } else if (type === "addMasuk") {
       setMasukForm(emptyMasukForm);
     } else if (type === "addKeluar") {
@@ -190,116 +209,273 @@ export default function StokPage() {
     setActiveItem(null);
   };
 
-  // ======= CRUD Handlers (menggunakan context) =======
-  const handleAddStok = (e) => {
-    e.preventDefault();
-    const qty = Number(stokForm.stok) || 0;
-    const harga = Number(stokForm.harga) || 0;
-    let gambarPath = stokForm.gambar;
-    if (selectedFile) {
-      gambarPath = `/src/assets/uploads/${selectedFile.name}`;
+  // ======= Handler untuk Modal Baru =======
+  const handleTambahBarangSubmit = async (data) => {
+    try {
+      let gambarPath = data.gambar;
+      
+      // Upload file jika ada
+      if (data.file) {
+        const formData = new FormData();
+        formData.append("file", data.file);
+        
+        const uploadRes = await fetch("http://localhost:3001/api/upload", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        
+        const uploadData = await uploadRes.json();
+        if (uploadData.success) {
+          gambarPath = uploadData.data.fileUrl;
+        }
+      }
+      
+      if (data.type === "baru") {
+        // Tambah barang baru
+        await addStokBarang({
+          brand: data.brand,
+          nama: data.nama,
+          kategori: data.kategori,
+          supplier: data.supplier,
+          deskripsi: data.deskripsi,
+          harga: data.harga,
+          stok: data.stok,
+          tanggal: data.tanggal,
+          gambar: gambarPath,
+        });
+        
+        // Juga catat sebagai barang masuk
+        await addBarangMasuk({
+          nama: data.nama,
+          kategori: data.kategori,
+          supplier: data.supplier,
+          deskripsi: `Stok awal: ${data.deskripsi}`,
+          harga: data.harga,
+          qty: data.stok,
+          tanggal: data.tanggal,
+          gambar: gambarPath,
+        });
+        
+        alert("Barang baru berhasil ditambahkan!");
+      } else if (data.type === "masuk") {
+        // Barang masuk (tambah stok)
+        await addBarangMasuk({
+          nama: data.nama,
+          kategori: data.kategori,
+          supplier: data.supplier,
+          deskripsi: data.deskripsi,
+          harga: data.harga,
+          qty: data.qty,
+          tanggal: data.tanggal,
+          gambar: data.gambar,
+        });
+        
+        alert("Barang masuk berhasil dicatat!");
+      } else if (data.type === "keluar") {
+        // Barang keluar (kurangi stok)
+        await addBarangKeluar({
+          nama: data.nama,
+          kategori: data.kategori,
+          supplier: data.supplier,
+          deskripsi: data.deskripsi,
+          harga: data.harga,
+          qty: data.qty,
+          tanggal: data.tanggal,
+          gambar: data.gambar,
+        });
+        
+        alert("Barang keluar berhasil dicatat!");
+      }
+      
+      setShowTambahModal(false);
+      refreshData();
+    } catch (error) {
+      alert("Error: " + error.message);
     }
-
-    // Tambahkan ke stok langsung
-    addStokBarang({
-      ...stokForm,
-      stok: qty,
-      harga,
-      tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
-      gambar: gambarPath,
-    });
-
-    // Juga tambahkan ke barangMasuk (karena ini adalah stok awal)
-    addBarangMasuk({
-      nama: stokForm.nama,
-      kategori: stokForm.kategori,
-      supplier: stokForm.supplier,
-      deskripsi: stokForm.deskripsi,
-      qty,
-      harga,
-      total: qty * harga,
-      tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
-      gambar: gambarPath,
-    });
-
-    closeModal();
   };
 
-  const handleAddMasuk = (e) => {
+  // ======= CRUD Handlers lama (untuk edit/delete) =======
+  const handleAddStok = async (e) => {
     e.preventDefault();
-    const qty = Number(masukForm.qty) || 0;
-    const harga = Number(masukForm.harga) || 0;
-    const total = qty * harga;
-    addBarangMasuk({
-      ...masukForm,
-      qty,
-      harga,
-      total,
-      tanggal: masukForm.tanggal || new Date().toISOString().split("T")[0],
-    });
-    closeModal();
+    try {
+      const qty = Number(stokForm.stok) || 0;
+      const harga = Number(stokForm.harga) || 0;
+      let gambarPath = stokForm.gambar;
+      if (selectedFile) {
+        gambarPath = `/src/assets/uploads/${selectedFile.name}`;
+      }
+
+      await addStokBarang({
+        ...stokForm,
+        stok: qty,
+        harga,
+        tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
+        gambar: gambarPath,
+      });
+
+      await addBarangMasuk({
+        nama: stokForm.nama,
+        kategori: stokForm.kategori,
+        supplier: stokForm.supplier,
+        deskripsi: stokForm.deskripsi,
+        qty,
+        harga,
+        total: qty * harga,
+        tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
+        gambar: gambarPath,
+      });
+
+      closeModal();
+    } catch (error) {
+      alert("Gagal menambah stok: " + error.message);
+    }
   };
 
-  const handleAddKeluar = (e) => {
+  const handleAddMasuk = async (e) => {
     e.preventDefault();
-    const qty = Number(keluarForm.qty) || 0;
-    const harga = Number(keluarForm.harga) || 0;
-    const total = qty * harga;
-    addBarangKeluar({
-      ...keluarForm,
-      qty,
-      harga,
-      total,
-      tanggal: keluarForm.tanggal || new Date().toISOString().split("T")[0],
-    });
-    closeModal();
+    try {
+      const qty = Number(masukForm.qty) || 0;
+      const harga = Number(masukForm.harga) || 0;
+      const total = qty * harga;
+      await addBarangMasuk({
+        ...masukForm,
+        qty,
+        harga,
+        total,
+        tanggal: masukForm.tanggal || new Date().toISOString().split("T")[0],
+      });
+      closeModal();
+    } catch (error) {
+      alert("Gagal menambah barang masuk: " + error.message);
+    }
   };
 
-  const handleSaveEditMasuk = (e) => {
+  const handleAddKeluar = async (e) => {
+    e.preventDefault();
+    try {
+      const qty = Number(keluarForm.qty) || 0;
+      const harga = Number(keluarForm.harga) || 0;
+      const total = qty * harga;
+      await addBarangKeluar({
+        ...keluarForm,
+        qty,
+        harga,
+        total,
+        tanggal: keluarForm.tanggal || new Date().toISOString().split("T")[0],
+      });
+      closeModal();
+    } catch (error) {
+      alert("Gagal menambah barang keluar: " + error.message);
+    }
+  };
+
+  const handleSaveEditMasuk = async (e) => {
     e.preventDefault();
     if (!activeItem) return;
-    const qty = Number(masukForm.qty) || 0;
-    const harga = Number(masukForm.harga) || 0;
-    const total = qty * harga;
-    editBarangMasuk(activeItem.id, {
-      ...masukForm,
-      qty,
-      harga,
-      total,
-      tanggal: masukForm.tanggal || new Date().toISOString().split("T")[0],
-    });
-    closeModal();
+    try {
+      const qty = Number(masukForm.qty) || 0;
+      const harga = Number(masukForm.harga) || 0;
+      const total = qty * harga;
+      await editBarangMasuk(activeItem.id, {
+        ...masukForm,
+        qty,
+        harga,
+        total,
+        tanggal: masukForm.tanggal || new Date().toISOString().split("T")[0],
+      });
+      closeModal();
+    } catch (error) {
+      alert("Gagal update barang masuk: " + error.message);
+    }
   };
 
-  const handleSaveEditKeluar = (e) => {
+  const handleSaveEditKeluar = async (e) => {
     e.preventDefault();
     if (!activeItem) return;
-    const qty = Number(keluarForm.qty) || 0;
-    const harga = Number(keluarForm.harga) || 0;
-    const total = qty * harga;
-    editBarangKeluar(activeItem.id, {
-      ...keluarForm,
-      qty,
-      harga,
-      total,
-      tanggal: keluarForm.tanggal || new Date().toISOString().split("T")[0],
-    });
-    closeModal();
+    try {
+      const qty = Number(keluarForm.qty) || 0;
+      const harga = Number(keluarForm.harga) || 0;
+      const total = qty * harga;
+      await editBarangKeluar(activeItem.id, {
+        ...keluarForm,
+        qty,
+        harga,
+        total,
+        tanggal: keluarForm.tanggal || new Date().toISOString().split("T")[0],
+      });
+      closeModal();
+    } catch (error) {
+      alert("Gagal update barang keluar: " + error.message);
+    }
   };
 
-  const handleDeleteMasuk = (itemId) => {
-    deleteBarangMasuk(itemId);
-    closeModal();
+  const handleDeleteMasuk = async (itemId) => {
+    try {
+      await deleteBarangMasuk(itemId);
+      closeModal();
+    } catch (error) {
+      alert("Gagal hapus barang masuk: " + error.message);
+    }
   };
 
-  const handleDeleteKeluar = (itemId) => {
-    deleteBarangKeluar(itemId);
-    closeModal();
+  const handleDeleteKeluar = async (itemId) => {
+    try {
+      await deleteBarangKeluar(itemId);
+      closeModal();
+    } catch (error) {
+      alert("Gagal hapus barang keluar: " + error.message);
+    }
   };
 
-  const handleDeleteStok = (itemId) => {
-    deleteStokBarang(itemId);
-    closeModal();
+  const handleEditStok = async (e) => {
+    e.preventDefault();
+    if (!activeItem) return;
+    
+    try {
+      let gambarPath = stokForm.gambar;
+      
+      // Upload file baru jika ada
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        
+        const uploadRes = await fetch("http://localhost:3001/api/upload", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        
+        const uploadData = await uploadRes.json();
+        if (uploadData.success) {
+          gambarPath = uploadData.data.fileUrl;
+        }
+      }
+      
+      await editStokBarang(activeItem.id, {
+        nama: stokForm.nama,
+        kategori: stokForm.kategori,
+        supplier: stokForm.supplier,
+        deskripsi: stokForm.deskripsi,
+        harga: parseFloat(stokForm.harga),
+        stok: parseInt(stokForm.stok),
+        gambar: gambarPath,
+      });
+      
+      closeModal();
+      alert("Stok berhasil diupdate!");
+    } catch (error) {
+      alert("Gagal update stok: " + error.message);
+    }
+  };
+
+  const handleDeleteStok = async (itemId) => {
+    try {
+      await deleteStokBarang(itemId);
+      closeModal();
+    } catch (error) {
+      alert("Gagal hapus stok: " + error.message);
+    }
   };
 
   // ======= UI Components (sama seperti sebelumnya) =======
@@ -469,6 +645,28 @@ export default function StokPage() {
   };
 
   // ======= JSX Render =======
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error: {error}</p>
+          <Button onClick={() => window.location.reload()}>Reload</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 mt-10">
       {/* HEADER */}
@@ -478,7 +676,7 @@ export default function StokPage() {
           <Button
             variant="outline"
             className="bg-[#1C45EF] flex gap-2 items-center text-white"
-            onClick={() => openModal("addStok")}
+            onClick={() => setShowTambahModal(true)}
           >
             <Plus size={16} /> Tambah Stok Barang
           </Button>
@@ -608,12 +806,20 @@ export default function StokPage() {
                     <td className="py-3 px-4 text-center">{item.stok}</td>
                     <td className="py-3 px-4 text-center">{item.tanggal}</td>
                     <td className="py-3 px-4 text-center">
-                      <button onClick={() => openModal("deleteStok", item)}>
-                        <Trash2
-                          className="text-red-500 cursor-pointer"
-                          size={16}
-                        />
-                      </button>
+                      <div className="flex justify-center gap-3">
+                        <button onClick={() => openModal("editStok", item)}>
+                          <Edit2
+                            className="text-blue-500 cursor-pointer"
+                            size={16}
+                          />
+                        </button>
+                        <button onClick={() => openModal("deleteStok", item)}>
+                          <Trash2
+                            className="text-red-500 cursor-pointer"
+                            size={16}
+                          />
+                        </button>
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button onClick={() => openModal("viewStok", item)}>
@@ -1061,6 +1267,112 @@ export default function StokPage() {
                 </Button>
                 <Button variant="outline" onClick={closeModal}>
                   Batal
+                </Button>
+              </div>
+            </form>
+          </div>
+        </ModalWrapper>
+      )}
+
+      {/* Edit Stok Modal */}
+      {modalType === "editStok" && activeItem && (
+        <ModalWrapper>
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Edit Stok Barang</h3>
+              <button onClick={closeModal} className="text-gray-500">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleEditStok} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nama Produk</label>
+                <input
+                  type="text"
+                  value={stokForm.nama}
+                  onChange={(e) => setStokForm({ ...stokForm, nama: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Kategori</label>
+                  <input
+                    type="text"
+                    value={stokForm.kategori}
+                    onChange={(e) => setStokForm({ ...stokForm, kategori: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Supplier</label>
+                  <input
+                    type="text"
+                    value={stokForm.supplier}
+                    onChange={(e) => setStokForm({ ...stokForm, supplier: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Deskripsi</label>
+                <textarea
+                  value={stokForm.deskripsi}
+                  onChange={(e) => setStokForm({ ...stokForm, deskripsi: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                  rows="2"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Harga (per unit)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stokForm.harga}
+                    onChange={(e) => setStokForm({ ...stokForm, harga: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Stok</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stokForm.stok}
+                    onChange={(e) => setStokForm({ ...stokForm, stok: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Upload Gambar Baru (Opsional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+                {activeItem.gambar && (
+                  <img src={activeItem.gambar} alt="Current" className="mt-2 w-32 h-32 object-cover rounded" />
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={closeModal} className="flex-1">
+                  Batal
+                </Button>
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+                  Simpan Perubahan
                 </Button>
               </div>
             </form>
@@ -1564,6 +1876,15 @@ export default function StokPage() {
             </div>
           </div>
         </ModalWrapper>
+      )}
+
+      {/* Modal Tambah Barang Baru */}
+      {showTambahModal && (
+        <TambahBarangModal
+          onClose={() => setShowTambahModal(false)}
+          onSubmit={handleTambahBarangSubmit}
+          stokBarang={stokBarang}
+        />
       )}
     </div>
   );

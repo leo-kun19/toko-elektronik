@@ -11,7 +11,6 @@ import Dashboard from "./routes/dashboard.jsx";
 import Stok from "./routes/stok.jsx";
 import Supplier from "./routes/supplier.jsx";
 import Kategori from "./routes/kategori.jsx";
-import ResetPassword from "./routes/resetPassword.jsx";
 import Login from "./routes/login.jsx";
 
 
@@ -20,14 +19,15 @@ function AppContent() {
   const { lowStockCount } = useAppContext();
 
   const isAuthPage =
-    location.pathname === "/" || location.pathname === "/reset-password";
+    location.pathname === "/" || 
+    location.pathname === "/login";
 
   if (isAuthPage) {
     return (
       <div className="min-h-screen bg-[#cdd9ff] flex items-center justify-center p-4">
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     );

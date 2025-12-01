@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -26,26 +26,19 @@ import {
   CardContent,
 } from "../components/ui/card";
 import Button from "../components/ui/button";
-
-// ===== DATA DUMMY (sama dengan StokPage.jsx) =====
-const initialBarangMasuk = [
-  { id: 1, nama: "Kulkas Samsung", kategori: "Elektronik", supplier: "PT Jaya Kaya", deskripsi: "Kulkas 2 pintu, hemat energi", harga: 9700000, qty: 10, total: 97000000, tanggal: "2025-11-08", gambar: "/src/assets/produk.jpg" },
-  { id: 2, nama: "Kipas Angin Kematian", kategori: "Peralatan Rumah", supplier: "PT Windah Batusadara", deskripsi: "Kipas angin berdaya tinggi", qty: 35, harga: 168600, total: 5901000, tanggal: "2025-11-09", gambar: "/src/assets/produk.jpg" },
-  { id: 3, nama: "Lampu Phillips", kategori: "Pencahayaan", supplier: "CV. Jaya Persada", deskripsi: "Lampu LED 18W", qty: 150, harga: 4047, total: 607050, tanggal: "2025-11-01", gambar: "/src/assets/produk.jpg" },
-];
-
-const initialBarangKeluar = [
-  { id: 1, nama: "Kulkas Samsung", kategori: "Elektronik", supplier: "PT Jaya Kaya", qty: 2, harga: 9700000, total: 19400000, tanggal: "2025-10-01" },
-  { id: 2, nama: "Kulkas Samsung", kategori: "Elektronik", supplier: "PT Jaya Kaya", qty: 3, harga: 9700000, total: 29100000, tanggal: "2025-10-15" },
-  { id: 3, nama: "Kipas Angin Kematian", kategori: "Peralatan Rumah", supplier: "PT Windah Batusadara", qty: 35, harga: 168600, total: 5901000, tanggal: "2025-10-20" },
-  { id: 4, nama: "Lampu Phillips", kategori: "Pencahayaan", supplier: "CV. Jaya Persada", qty: 150, harga: 4047, total: 607050, tanggal: "2025-10-25" },
-  { id: 5, nama: "TV OLED LG", kategori: "Elektronik", supplier: "PT Elektronik Baru", qty: 5, harga: 12000000, total: 60000000, tanggal: "2025-10-30" },
-];
+import { useAppContext } from "../store";
+import { barangMasukAPI, authAPI } from "../services/api";
 
 export default function Dashboard() {
-  // ===== STATE =====
-  const [barangMasuk] = useState(initialBarangMasuk);
-  const [barangKeluar] = useState(initialBarangKeluar);
+  // ===== STATE dari Context (data real dari API) =====
+  const { barangMasuk, barangKeluar, loading, error, deleteBarangMasuk } = useAppContext();
+  
+  // State untuk user profile
+  const [userProfile, setUserProfile] = useState(null);
+
+  // State untuk 3 barang masuk terbaru (fetch terpisah)
+  const [latestBarangMasuk, setLatestBarangMasuk] = useState([]);
+  const [loadingLatest, setLoadingLatest] = useState(true);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -59,9 +52,40 @@ export default function Dashboard() {
   const [modalType, setModalType] = useState(null);
   const [activeItem, setActiveItem] = useState(null);
 
+  // Fetch 3 barang masuk terbaru dan profile
+  useEffect(() => {
+    fetchLatestBarangMasuk();
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await authAPI.getProfile();
+      if (response.success) {
+        setUserProfile(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
+  const fetchLatestBarangMasuk = async () => {
+    try {
+      setLoadingLatest(true);
+      const response = await barangMasukAPI.getLatest();
+      if (response.success) {
+        setLatestBarangMasuk(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching latest barang masuk:", err);
+    } finally {
+      setLoadingLatest(false);
+    }
+  };
+
   // ===== DERIVED DATA =====
   const filteredBarangMasuk = useMemo(() => {
-    return barangMasuk.filter(item => {
+    return latestBarangMasuk.filter(item => {
       const itemDate = new Date(item.tanggal);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
@@ -71,7 +95,7 @@ export default function Dashboard() {
       if (filterSupplier.size && !filterSupplier.has(item.supplier)) return false;
       return true;
     });
-  }, [barangMasuk, startDate, endDate, filterKategori, filterSupplier]);
+  }, [latestBarangMasuk, startDate, endDate, filterKategori, filterSupplier]);
 
   // Top Product (by qty keluar)
   const topProductsData = useMemo(() => {
@@ -105,15 +129,25 @@ export default function Dashboard() {
       .slice(0, 7);
   }, [barangKeluar]);
 
-  // Monthly Sales (dummy 12 bulan)
+  // Monthly Sales (dari data barang keluar real)
   const monthlySales = useMemo(() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const base = 120;
-    return months.map((month, i) => ({
-      month,
-      sales: base + (i % 3 === 0 ? 40 : i % 2 === 0 ? 20 : 0) + Math.floor(Math.random() * 30)
-    }));
-  }, []);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
+    return months.map((month, i) => {
+      // Hitung total qty barang keluar per bulan
+      const monthSales = barangKeluar.filter(item => {
+        const itemDate = new Date(item.tanggal);
+        return itemDate.getMonth() === i && itemDate.getFullYear() === currentYear;
+      }).reduce((sum, item) => sum + (item.qty || 0), 0);
+      
+      return {
+        month,
+        sales: monthSales
+      };
+    });
+  }, [barangKeluar]);
 
   // Pagination
   const totalPages = Math.ceil(filteredBarangMasuk.length / itemsPerPage);
@@ -132,8 +166,8 @@ export default function Dashboard() {
 
   // ===== FILTER DROPDOWN =====
   const FilterDropdown = () => {
-    const allKategori = [...new Set(barangMasuk.map(i => i.kategori))];
-    const allSupplier = [...new Set(barangMasuk.map(i => i.supplier))];
+    const allKategori = [...new Set(latestBarangMasuk.map(i => i.kategori))];
+    const allSupplier = [...new Set(latestBarangMasuk.map(i => i.supplier))];
 
     const toggleKategori = (cat) => {
       setFilterKategori(prev => {
@@ -202,11 +236,35 @@ export default function Dashboard() {
     return null;
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error: {error}</p>
+          <Button onClick={() => window.location.reload()}>Reload</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5 mt-10">
       {/* === HEADER === */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-800">Selamat Datang, Annisa</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Selamat Datang, {userProfile?.username || "Admin"}
+        </h1>
         <div className="flex gap-2">
           <div className="relative">
             <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowGlobalDate(!showGlobalDate)}>
@@ -433,10 +491,13 @@ export default function Dashboard() {
             <p>Hapus <strong>{activeItem.nama}</strong>? (Qty: {activeItem.qty})</p>
             <div className="mt-6 flex gap-3">
               <Button variant="outline" onClick={closeModal}>Batal</Button>
-              <Button className="bg-red-500 text-white" onClick={() => {
-                // Simulasi logic hapus
-                alert("Fitur hapus disimulasikan");
-                closeModal();
+              <Button className="bg-red-500 text-white" onClick={async () => {
+                try {
+                  await deleteBarangMasuk(activeItem.id);
+                  closeModal();
+                } catch (err) {
+                  alert("Gagal menghapus: " + err.message);
+                }
               }}>Hapus</Button>
             </div>
           </div>

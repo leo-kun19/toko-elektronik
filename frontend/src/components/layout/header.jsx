@@ -1,10 +1,44 @@
-import { Bell } from "lucide-react";
-import { useState } from "react";
-import { useAppContext } from "../../store"; 
+import { Bell, ChevronDown, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAppContext } from "../../store";
+import { authAPI } from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { lowStockCount, lowStockItems } = useAppContext();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await authAPI.getProfile();
+      if (response.success) {
+        setUserProfile(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      // Clear local storage
+      localStorage.clear();
+      // Redirect to login
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      // Tetap redirect meskipun error
+      navigate("/login");
+    }
+  };
 
   return (
     <header className="fixed top-0 left-64 right-0 bg-white shadow-sm flex items-center justify-between px-8 py-3 z-50">
@@ -62,14 +96,40 @@ export default function Header() {
         </div>
 
         {/* User Info */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="font-medium text-gray-800">Annisa Cahyani</p>
-            <p className="text-xs text-gray-400">Admin</p>
-          </div>
-          <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-semibold">
-            A
-          </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
+          >
+            <div className="text-right">
+              <p className="font-medium text-gray-800">
+                {userProfile?.username || "Loading..."}
+              </p>
+              <p className="text-xs text-gray-400">{userProfile?.role || "Admin"}</p>
+            </div>
+            <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-semibold">
+              {userProfile?.username?.charAt(0).toUpperCase() || "A"}
+            </div>
+            <ChevronDown size={16} className="text-gray-400" />
+          </button>
+
+          {/* Profile Dropdown */}
+          {showProfileMenu && (
+            <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <p className="font-medium text-gray-800">{userProfile?.username}</p>
+                <p className="text-xs text-gray-500">{userProfile?.role}</p>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
