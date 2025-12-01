@@ -1,16 +1,40 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
-    navigate("/dashboard"); // Redirect ke dashboard setelah login
+
+    try {
+      const res = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 🟢 penting supaya cocok dgn CORS backend
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // ✅ Login sukses
+        localStorage.setItem("token", data.token);
+        alert("Login berhasil!");
+        navigate("/dashboard");
+      } else {
+        // ❌ Login gagal
+        alert(data.error || "Username atau password salah");
+      }
+    } catch (err) {
+      console.error("Error saat login:", err);
+      alert("Tidak dapat terhubung ke server. Pastikan backend berjalan di port 3001.");
+    }
   };
 
   return (
@@ -26,18 +50,18 @@ export default function Login() {
           Sign In
         </h2>
         <p className="text-center text-gray-500 mb-6 text-sm">
-          Masukkan akun kredensial yang tervalidasi sebagai admin
+          Masukkan kredensial akun admin beserta password yang tervalidasi
         </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 text-sm mb-1">Email</label>
+            <label className="block text-gray-700 text-sm mb-1">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter Email Address"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Masukkan Username"
               required
               className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
@@ -49,7 +73,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter Password"
+              placeholder="Masukkan Password"
               required
               className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
@@ -63,17 +87,7 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="mt-6 border-t border-gray-200 pt-4">
-          <p className="text-center text-sm">
-            <Link
-              to="/reset-password"
-              className="text-blue-600 hover:underline font-medium"
-            >
-              Forgot your password?
-            </Link>
-          </p>
-        </div>
+
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -16,10 +16,14 @@ import {
   CardContent,
 } from "../components/ui/card";
 import Button from "../components/ui/button";
+import { supplierAPI } from "../services/api";
 
 export default function Supplier() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // === MODAL STATES ===
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -30,25 +34,33 @@ export default function Supplier() {
   // === SUPPLIER STATE ===
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [newSupplier, setNewSupplier] = useState({
-    name: "",
+    nama: "",
     contact: "",
-    address: "",
   });
 
   const itemsPerPage = 5;
 
-  // Dummy data
-  const suppliers = [
-    { id: 1, name: "PT. Pan Tech", contact: "+621234567890", address: "Jl Abc 123 Medan Petisah" },
-    { id: 2, name: "PT. Sazuuu", contact: "+621234567890", address: "Jl Pembangunan Tj Gusta" },
-    { id: 3, name: "CV. Jaya Persada", contact: "+621234567890", address: "Jl Dr Mansyur No 111111111" },
-    { id: 4, name: "PT. Makmur Abadi", contact: "+621234567890", address: "Jl Sei Belutu No.45" },
-    { id: 5, name: "PT. Cahaya Baru", contact: "+621234567890", address: "Jl Setia Budi No.123" },
-    { id: 6, name: "PT. Sinar Terang", contact: "+621234567890", address: "Jl Brigjen Katamso No.23" },
-  ];
+  // Fetch suppliers dari API
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const fetchSuppliers = async () => {
+    try {
+      setLoading(true);
+      const response = await supplierAPI.getAll();
+      if (response.success) {
+        setSuppliers(response.data);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredSuppliers = suppliers.filter((s) =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+    s.nama.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const totalPages = Math.ceil(filteredSuppliers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -58,23 +70,69 @@ export default function Supplier() {
   );
 
   // === HANDLERS ===
-  const handleAddSupplier = (e) => {
+  const handleAddSupplier = async (e) => {
     e.preventDefault();
-    console.log("Supplier baru:", newSupplier);
-    setNewSupplier({ name: "", contact: "", address: "" });
-    setIsAddOpen(false);
+    try {
+      const response = await supplierAPI.create(newSupplier);
+      if (response.success) {
+        await fetchSuppliers();
+        setNewSupplier({ nama: "", contact: "" });
+        setIsAddOpen(false);
+      }
+    } catch (err) {
+      alert("Gagal menambah supplier: " + err.message);
+    }
   };
 
-  const handleEditSupplier = (e) => {
+  const handleEditSupplier = async (e) => {
     e.preventDefault();
-    console.log("Edit supplier:", selectedSupplier);
-    setIsEditOpen(false);
+    try {
+      const response = await supplierAPI.update(selectedSupplier.suplier_id, {
+        nama: selectedSupplier.nama,
+        contact: selectedSupplier.contact,
+      });
+      if (response.success) {
+        await fetchSuppliers();
+        setIsEditOpen(false);
+      }
+    } catch (err) {
+      alert("Gagal update supplier: " + err.message);
+    }
   };
 
-  const handleDeleteSupplier = () => {
-    console.log("Hapus supplier:", selectedSupplier);
-    setIsDeleteOpen(false);
+  const handleDeleteSupplier = async () => {
+    try {
+      const response = await supplierAPI.delete(selectedSupplier.suplier_id);
+      if (response.success) {
+        await fetchSuppliers();
+        setIsDeleteOpen(false);
+      }
+    } catch (err) {
+      alert("Gagal hapus supplier: " + err.message);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading suppliers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error: {error}</p>
+          <Button onClick={fetchSuppliers}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 mt-10">
@@ -124,16 +182,14 @@ export default function Supplier() {
               <tr>
                 <th className="px-6 py-3 text-left font-medium">Nama Supplier</th>
                 <th className="px-6 py-3 text-left font-medium">Kontak</th>
-                <th className="px-6 py-3 text-left font-medium">Alamat</th>
                 <th className="px-6 py-3 text-left font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="text-gray-800">
               {currentSuppliers.map((supplier) => (
-                <tr key={supplier.id} className="border-b hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-3">{supplier.name}</td>
-                  <td className="px-6 py-3">{supplier.contact}</td>
-                  <td className="px-6 py-3">{supplier.address}</td>
+                <tr key={supplier.suplier_id} className="border-b hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-3">{supplier.nama}</td>
+                  <td className="px-6 py-3">{supplier.contact || "-"}</td>
                   <td className="py-3 px-1 text-center flex gap-5">
                     <button
                       className="text-yellow-500 hover:text-[#1C45EF]"
@@ -213,12 +269,10 @@ export default function Supplier() {
       {isAddOpen && (
         <Modal title="Tambah Supplier" onClose={() => setIsAddOpen(false)}>
           <form onSubmit={handleAddSupplier} className="flex flex-col gap-4">
-            <InputField label="Nama Supplier" value={newSupplier.name}
-              onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })} />
+            <InputField label="Nama Supplier" value={newSupplier.nama}
+              onChange={(e) => setNewSupplier({ ...newSupplier, nama: e.target.value })} />
             <InputField label="Kontak" value={newSupplier.contact}
               onChange={(e) => setNewSupplier({ ...newSupplier, contact: e.target.value })} />
-            <InputField label="Alamat" value={newSupplier.address}
-              onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })} />
             <Button type="submit" className="w-full bg-[#C8D6FF] text-[#111827] py-3 rounded-xl hover:bg-[#B5C8FF] flex justify-center items-center gap-2">
               Tambah Supplier <PlusCircle size={18} />
             </Button>
@@ -230,9 +284,9 @@ export default function Supplier() {
       {isViewOpen && selectedSupplier && (
         <Modal title="Detail Supplier" onClose={() => setIsViewOpen(false)}>
           <div className="flex flex-col gap-3 text-sm text-gray-700">
-            <p><strong>Nama:</strong> {selectedSupplier.name}</p>
-            <p><strong>Kontak:</strong> {selectedSupplier.contact}</p>
-            <p><strong>Alamat:</strong> {selectedSupplier.address}</p>
+            <p><strong>Nama:</strong> {selectedSupplier.nama}</p>
+            <p><strong>Kontak:</strong> {selectedSupplier.contact || "-"}</p>
+            <p><strong>Jumlah Produk:</strong> {selectedSupplier.produk?.length || 0}</p>
           </div>
         </Modal>
       )}
@@ -241,17 +295,13 @@ export default function Supplier() {
       {isEditOpen && selectedSupplier && (
         <Modal title="Edit Supplier" onClose={() => setIsEditOpen(false)}>
           <form onSubmit={handleEditSupplier} className="flex flex-col gap-4">
-            <InputField label="Nama Supplier" value={selectedSupplier.name}
+            <InputField label="Nama Supplier" value={selectedSupplier.nama}
               onChange={(e) =>
-                setSelectedSupplier({ ...selectedSupplier, name: e.target.value })
+                setSelectedSupplier({ ...selectedSupplier, nama: e.target.value })
               } />
-            <InputField label="Kontak" value={selectedSupplier.contact}
+            <InputField label="Kontak" value={selectedSupplier.contact || ""}
               onChange={(e) =>
                 setSelectedSupplier({ ...selectedSupplier, contact: e.target.value })
-              } />
-            <InputField label="Alamat" value={selectedSupplier.address}
-              onChange={(e) =>
-                setSelectedSupplier({ ...selectedSupplier, address: e.target.value })
               } />
             <Button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600">
               Simpan Perubahan
@@ -265,7 +315,7 @@ export default function Supplier() {
         <Modal title="Hapus Supplier" onClose={() => setIsDeleteOpen(false)}>
           <p className="text-sm text-gray-700 mb-5">
             Apakah kamu yakin ingin menghapus{" "}
-            <span className="font-semibold">{selectedSupplier.name}</span>?
+            <span className="font-semibold">{selectedSupplier.nama}</span>?
           </p>
           <div className="flex justify-end gap-3">
             <Button

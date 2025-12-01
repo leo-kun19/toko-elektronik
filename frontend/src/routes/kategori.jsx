@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Plus, Eye, Trash2, Pen, LayoutGrid, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
 import Button from "../components/ui/button";
+import { kategoriAPI } from "../services/api";
 
 export default function Kategori() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 5;
 
   // modal states
@@ -17,15 +20,24 @@ export default function Kategori() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
 
-  // dummy data
-  const categories = [
-    { id: 1, name: "Kulkas", description: "Kulkas adalah lorem ipsum dolor sit amet" },
-    { id: 2, name: "TV", description: "TV adalah amet sit et al lorem dolor" },
-    { id: 3, name: "Kipas Angin", description: "Kipas Angin adalah merupakan lorem ipsum il" },
-    { id: 4, name: "Mesin Cuci", description: "Mesin Cuci lorem ipsum dolor sit amet" },
-    { id: 5, name: "Dispenser", description: "Dispenser amet lorem dolor sit" },
-    { id: 6, name: "Oven", description: "Oven lorem ipsum amet dolor sit" },
-  ];
+  // Fetch data dari API
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await kategoriAPI.getAll();
+      if (response.success) {
+        setCategories(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredCategories = categories.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -36,23 +48,49 @@ export default function Kategori() {
   const currentCategories = filteredCategories.slice(startIndex, startIndex + itemsPerPage);
 
   // handlers
-  const handleAddCategory = (e) => {
+  const handleAddCategory = async (e) => {
     e.preventDefault();
-    console.log("Kategori baru:", newCategory);
-    setNewCategory({ name: "", description: "" });
-    setIsAddOpen(false);
+    try {
+      await kategoriAPI.create(newCategory);
+      await fetchCategories();
+      setNewCategory({ name: "", description: "" });
+      setIsAddOpen(false);
+    } catch (err) {
+      alert("Gagal menambah kategori: " + err.message);
+    }
   };
 
-  const handleEditCategory = (e) => {
+  const handleEditCategory = async (e) => {
     e.preventDefault();
-    console.log("Kategori diedit:", selectedCategory);
-    setIsEditOpen(false);
+    try {
+      await kategoriAPI.update(selectedCategory.categori_id, {
+        name: selectedCategory.name,
+        description: selectedCategory.description,
+      });
+      await fetchCategories();
+      setIsEditOpen(false);
+    } catch (err) {
+      alert("Gagal update kategori: " + err.message);
+    }
   };
 
-  const handleDeleteCategory = () => {
-    console.log("Hapus kategori:", selectedCategory);
-    setIsDeleteOpen(false);
+  const handleDeleteCategory = async () => {
+    try {
+      await kategoriAPI.delete(selectedCategory.categori_id);
+      await fetchCategories();
+      setIsDeleteOpen(false);
+    } catch (err) {
+      alert("Gagal hapus kategori: " + err.message);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5 mt-10">
@@ -104,7 +142,7 @@ export default function Kategori() {
             </thead>
             <tbody className="text-gray-800">
               {currentCategories.map((category) => (
-                <tr key={category.id} className="border-b hover:bg-gray-50 transition-colors duration-150">
+                <tr key={category.categori_id} className="border-b hover:bg-gray-50 transition-colors duration-150">
                   <td className="px-6 py-3">{category.name}</td>
                   <td className="px-6 py-3">{category.description}</td>
                   <td className="py-3 px-1 text-center flex gap-5">
