@@ -135,6 +135,10 @@ public/uploads/
 # Documentation
 docs/.vuepress/dist
 
+# Deployment documentation (keep local only)
+RAILWAY-*.md
+DEPLOYMENT-*.md
+
 # Serverless directories
 .serverless/
 
