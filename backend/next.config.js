@@ -8,24 +8,11 @@ const nextConfig = {
       beforeFiles: [
         // API routes - no rewrite needed
       ],
-      afterFiles: [
-        // Serve frontend for all non-API routes
-        {
-          source: '/:path*',
-          destination: '/index.html',
-          has: [
-            {
-              type: 'header',
-              key: 'accept',
-              value: '(.*text/html.*)',
-            },
-          ],
-        },
-      ],
+      afterFiles: [],
       fallback: [
-        // Fallback to index.html for SPA routing
+        // Only rewrite non-asset paths to index.html for SPA routing
         {
-          source: '/:path*',
+          source: '/:path((?!assets|api|images|_next).*)',
           destination: '/index.html',
         },
       ],
