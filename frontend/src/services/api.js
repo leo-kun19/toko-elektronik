@@ -1,8 +1,7 @@
 // API Service Layer
-// Always use relative path in production (Vercel proxy)
 const API_BASE_URL = import.meta.env.PROD 
-  ? "/api"  // Production: use Vercel proxy (no CORS)
-  : "http://localhost:3001/api";  // Development: direct to backend
+  ? "https://toko-elektronik-production.up.railway.app/api"  // Production: direct to Railway
+  : "http://localhost:3001/api";  // Development: local backend
 
 // Helper function untuk fetch dengan error handling
 async function fetchAPI(endpoint, options = {}) {
