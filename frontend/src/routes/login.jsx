@@ -10,7 +10,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+    const API_URL = "";  // Same domain, use relative URL
 
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
