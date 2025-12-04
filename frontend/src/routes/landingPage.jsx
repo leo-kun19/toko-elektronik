@@ -2,6 +2,9 @@ import React, { useRef } from 'react';
 import { useState } from "react";
 import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
+import produkNavbar from '../assets/produknavbar.png';
+import produkKatalog from '../assets/produkkatalog.png';
 
 export default function LandingPage() {
   const heroRef = useRef(null);
@@ -53,7 +56,7 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 py-4 px-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <img
-            src="/src/assets/logo.png"
+            src={logo}
             alt="Logo Ginbers Jaya Elektronik"
             className="w-10 h-10"
           />
@@ -89,7 +92,7 @@ export default function LandingPage() {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-400"></div>
         <img
-          src="/src/assets/produknavbar.png"
+          src={produkNavbar}
           alt="Produk Ginbers Jaya Elektronik"
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />
@@ -110,7 +113,7 @@ export default function LandingPage() {
           </h2>
           <div className="inline-block bg-white">
             <img
-              src="/src/assets/produkkatalog.png"
+              src={produkKatalog}
               alt="Katalog Produk"
               className="w-full h-auto object-contain"
             />
@@ -150,7 +153,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <img
-                  src="/src/assets/logo.png"
+                  src={logo}
                   alt="Logo Ginbers Jaya Elektronik"
                   className="w-10 h-10"
                 />
