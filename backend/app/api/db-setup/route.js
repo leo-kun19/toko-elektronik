@@ -31,7 +31,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: "Database schema pushed successfully!",
-      output: stdout,
+      output: stdout
     });
   } catch (error) {
     console.error("❌ Error setting up database:", error);
@@ -40,7 +40,7 @@ export async function POST(request) {
         success: false,
         error: error.message,
         stderr: error.stderr,
-        stdout: error.stdout,
+        stdout: error.stdout
       },
       { status: 500 }
     );
@@ -50,6 +50,6 @@ export async function POST(request) {
 export async function GET() {
   return NextResponse.json({
     message: "Use POST method with ?secret=test123 to setup database",
-    endpoint: "/api/db-setup?secret=test123",
+    endpoint: "/api/db-setup?secret=test123"
   });
 }

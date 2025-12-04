@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil statistik dashboard
 export async function GET(request) {
   try {
@@ -33,14 +21,14 @@ export async function GET(request) {
 
     // Total barang masuk
     const barangMasukData = await prisma.barang_masuk.findMany({
-      where: whereDate,
+      where: whereDate
     });
     const totalBarangMasuk = barangMasukData.reduce((sum, item) => sum + item.qty, 0);
     const totalPengeluaran = barangMasukData.reduce((sum, item) => sum + parseFloat(item.total), 0);
 
     // Total barang keluar
     const barangKeluarData = await prisma.barang_keluar.findMany({
-      where: whereDate,
+      where: whereDate
     });
     const totalBarangKeluar = barangKeluarData.reduce((sum, item) => sum + item.qty, 0);
     const totalPemasukan = barangKeluarData.reduce((sum, item) => sum + parseFloat(item.total), 0);
@@ -53,7 +41,7 @@ export async function GET(request) {
           name: item.nama,
           category: item.kategori,
           price: parseFloat(item.harga),
-          qty: 0,
+          qty: 0
         };
       }
       topProductsMap[item.nama].qty += item.qty;
@@ -69,7 +57,7 @@ export async function GET(request) {
       if (!topCategoriesMap[item.kategori]) {
         topCategoriesMap[item.kategori] = {
           name: item.kategori,
-          count: 0,
+          count: 0
         };
       }
       topCategoriesMap[item.kategori].count += item.qty;
@@ -90,16 +78,16 @@ export async function GET(request) {
         where: {
           tanggal: {
             gte: date,
-            lt: nextDate,
-          },
-        },
+            lt: nextDate
+          }
+        }
       });
 
       const totalSales = sales.reduce((sum, item) => sum + item.qty, 0);
       
       monthlySales.push({
         month: date.toLocaleString('id-ID', { month: 'short' }),
-        sales: totalSales,
+        sales: totalSales
       });
     }
 
@@ -107,13 +95,13 @@ export async function GET(request) {
     const lowStockItems = await prisma.produk.findMany({
       where: {
         stock: {
-          lt: 5,
-        },
+          lt: 5
+        }
       },
       include: {
         categori: true,
-        suplier: true,
-      },
+        suplier: true
+      }
     });
 
     return Response.json(
@@ -128,14 +116,10 @@ export async function GET(request) {
           topCategories,
           monthlySales,
           lowStockCount: lowStockItems.length,
-          lowStockItems,
-        },
+          lowStockItems
+        }
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -143,11 +127,7 @@ export async function GET(request) {
     return Response.json(
       { success: false, error: "Gagal mengambil statistik dashboard" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

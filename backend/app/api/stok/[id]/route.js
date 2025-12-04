@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Get stok by ID
 export async function GET(request, { params }) {
   try {
@@ -23,19 +11,15 @@ export async function GET(request, { params }) {
       where: { produk_id: id },
       include: {
         categori: true,
-        suplier: true,
-      },
+        suplier: true
+      }
     });
 
     if (!produk) {
       return Response.json(
         { success: false, error: "Produk tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -50,16 +34,12 @@ export async function GET(request, { params }) {
       harga: parseFloat(produk.price),
       stok: produk.stock,
       tanggal: produk.updated_at ? produk.updated_at.toISOString().split('T')[0] : "",
-      gambar: produk.image ? `http://localhost:3001/api${produk.image}` : "http://localhost:3001/api/images/default.jpg",
+      gambar: produk.image ? `http://localhost:3001/api${produk.image}` : "http://localhost:3001/api/images/default.jpg"
     };
 
     return Response.json(
       { success: true, data: result },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -67,11 +47,7 @@ export async function GET(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengambil data stok" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -88,11 +64,11 @@ export async function PUT(request, { params }) {
     let kategoriId = null;
     if (kategori) {
       let kat = await prisma.categori.findFirst({
-        where: { name: kategori },
+        where: { name: kategori }
       });
       if (!kat) {
         kat = await prisma.categori.create({
-          data: { name: kategori, description: null },
+          data: { name: kategori, description: null }
         });
       }
       kategoriId = kat.categori_id;
@@ -102,11 +78,11 @@ export async function PUT(request, { params }) {
     let supplierId = null;
     if (supplier) {
       let sup = await prisma.suplier.findFirst({
-        where: { nama: supplier },
+        where: { nama: supplier }
       });
       if (!sup) {
         sup = await prisma.suplier.create({
-          data: { nama: supplier, contact: null },
+          data: { nama: supplier, contact: null }
         });
       }
       supplierId = sup.suplier_id;
@@ -123,12 +99,12 @@ export async function PUT(request, { params }) {
         stock: parseInt(stok),
         categori_id: kategoriId,
         suplier_id: supplierId,
-        updated_at: new Date(),
+        updated_at: new Date()
       },
       include: {
         categori: true,
-        suplier: true,
-      },
+        suplier: true
+      }
     });
 
     const result = {
@@ -141,20 +117,16 @@ export async function PUT(request, { params }) {
       harga: parseFloat(produk.price),
       stok: produk.stock,
       tanggal: produk.updated_at ? produk.updated_at.toISOString().split('T')[0] : "",
-      gambar: produk.image ? `http://localhost:3001/api${produk.image}` : "http://localhost:3001/api/images/default.jpg",
+      gambar: produk.image ? `http://localhost:3001/api${produk.image}` : "http://localhost:3001/api/images/default.jpg"
     };
 
     return Response.json(
       {
         success: true,
         message: "Stok berhasil diupdate",
-        data: result,
+        data: result
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -162,11 +134,7 @@ export async function PUT(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengupdate stok" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -178,19 +146,15 @@ export async function DELETE(request, { params }) {
     const id = parseInt(params.id);
 
     await prisma.produk.delete({
-      where: { produk_id: id },
+      where: { produk_id: id }
     });
 
     return Response.json(
       {
         success: true,
-        message: "Stok berhasil dihapus",
+        message: "Stok berhasil dihapus"
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -198,11 +162,7 @@ export async function DELETE(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal menghapus stok" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

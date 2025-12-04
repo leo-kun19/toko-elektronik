@@ -40,7 +40,7 @@ export async function POST(request) {
     // Seed Admin
     console.log("👤 Seeding admin...");
     const admin = await prisma.admin.create({
-      data: seedData.admin[0],
+      data: seedData.admin[0]
     });
     console.log(`✅ Admin created: ${admin.username}`);
 
@@ -50,8 +50,8 @@ export async function POST(request) {
       await prisma.categori.create({
         data: {
           ...cat,
-          admin_id: admin.admin_id,
-        },
+          admin_id: admin.admin_id
+        }
       });
     }
     console.log(`✅ ${seedData.categories.length} categories created`);
@@ -61,7 +61,7 @@ export async function POST(request) {
     const supplierMap = new Map();
     for (const sup of seedData.suppliers) {
       const supplier = await prisma.suplier.create({
-        data: sup,
+        data: sup
       });
       supplierMap.set(sup.nama, supplier.suplier_id);
     }
@@ -75,7 +75,7 @@ export async function POST(request) {
     for (const prod of seedData.products) {
       try {
         const category = await prisma.categori.findFirst({
-          where: { name: prod.categori },
+          where: { name: prod.categori }
         });
 
         if (!category) {
@@ -97,8 +97,8 @@ export async function POST(request) {
             price: prod.price,
             stock: prod.stock,
             categori_id: category.categori_id,
-            suplier_id: supplierId,
-          },
+            suplier_id: supplierId
+          }
         });
         productCount++;
       } catch (error) {
@@ -114,9 +114,9 @@ export async function POST(request) {
         admin: 1,
         categories: seedData.categories.length,
         suppliers: seedData.suppliers.length,
-        products: productCount,
+        products: productCount
       },
-      errors: errors.length > 0 ? errors : undefined,
+      errors: errors.length > 0 ? errors : undefined
     };
 
     console.log("🎉 Database seeded successfully!");
@@ -129,7 +129,7 @@ export async function POST(request) {
       {
         success: false,
         error: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
       },
       { status: 500 }
     );
@@ -152,15 +152,15 @@ export async function GET(request) {
         admin: adminCount,
         products: productCount,
         categories: categoryCount,
-        suppliers: supplierCount,
+        suppliers: supplierCount
       },
-      needsSeed: adminCount === 0 || productCount === 0,
+      needsSeed: adminCount === 0 || productCount === 0
     });
   } catch (error) {
     return NextResponse.json(
       {
         database: "error",
-        error: error.message,
+        error: error.message
       },
       { status: 500 }
     );

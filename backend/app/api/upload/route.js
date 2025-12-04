@@ -2,18 +2,6 @@ import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // POST - Upload gambar
 export async function POST(request) {
   try {
@@ -24,11 +12,7 @@ export async function POST(request) {
       return Response.json(
         { success: false, error: "File tidak ditemukan" },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -39,11 +23,7 @@ export async function POST(request) {
       return Response.json(
         { success: false, error: "Tipe file tidak didukung. Gunakan JPG, PNG, GIF, atau WebP" },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -54,11 +34,7 @@ export async function POST(request) {
       return Response.json(
         { success: false, error: "Ukuran file terlalu besar. Maksimal 5MB" },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -91,15 +67,11 @@ export async function POST(request) {
           fileName,
           fileUrl,
           fileSize: file.size,
-          fileType: file.type,
-        },
+          fileType: file.type
+        }
       },
       {
-        status: 201,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 201
       }
     );
   } catch (error) {
@@ -107,11 +79,7 @@ export async function POST(request) {
     return Response.json(
       { success: false, error: "Gagal mengupload file" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

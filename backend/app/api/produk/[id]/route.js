@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil produk by ID
 export async function GET(request, { params }) {
   try {
@@ -23,19 +11,15 @@ export async function GET(request, { params }) {
       where: { produk_id: id },
       include: {
         categori: true,
-        suplier: true,
-      },
+        suplier: true
+      }
     });
 
     if (!produk) {
       return Response.json(
         { success: false, error: "Produk tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -43,13 +27,9 @@ export async function GET(request, { params }) {
     return Response.json(
       {
         success: true,
-        data: produk,
+        data: produk
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -57,11 +37,7 @@ export async function GET(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengambil data produk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -84,25 +60,21 @@ export async function PUT(request, { params }) {
         stock: stock !== undefined ? parseInt(stock) : undefined,
         categori_id: categori_id !== undefined ? (categori_id ? parseInt(categori_id) : null) : undefined,
         suplier_id: suplier_id !== undefined ? (suplier_id ? parseInt(suplier_id) : null) : undefined,
-        updated_at: new Date(),
+        updated_at: new Date()
       },
       include: {
         categori: true,
-        suplier: true,
-      },
+        suplier: true
+      }
     });
 
     return Response.json(
       {
         success: true,
         message: "Produk berhasil diupdate",
-        data: produk,
+        data: produk
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -110,11 +82,7 @@ export async function PUT(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengupdate produk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -126,19 +94,15 @@ export async function DELETE(request, { params }) {
     const id = parseInt(params.id);
 
     await prisma.produk.delete({
-      where: { produk_id: id },
+      where: { produk_id: id }
     });
 
     return Response.json(
       {
         success: true,
-        message: "Produk berhasil dihapus",
+        message: "Produk berhasil dihapus"
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -146,11 +110,7 @@ export async function DELETE(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal menghapus produk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

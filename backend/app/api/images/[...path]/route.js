@@ -12,11 +12,7 @@ export async function GET(request, { params }) {
     // Check if file exists
     if (!existsSync(fullPath)) {
       return new Response("Image not found", { 
-        status: 404,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        }
+        status: 404
       });
     }
     
@@ -31,41 +27,20 @@ export async function GET(request, { params }) {
       png: "image/png",
       gif: "image/gif",
       webp: "image/webp",
-      svg: "image/svg+xml",
+      svg: "image/svg+xml"
     };
     
     const contentType = contentTypes[ext] || "image/jpeg";
     
     // Return image with proper headers
     return new Response(imageBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Access-Control-Allow-Origin": "http://localhost:5173",
-        "Access-Control-Allow-Credentials": "true",
-      },
+      status: 200
     });
   } catch (error) {
     console.error("Error serving image:", error);
     return new Response("Error loading image", { 
-      status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "http://localhost:5173",
-        "Access-Control-Allow-Credentials": "true",
-      }
+      status: 500
     });
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
