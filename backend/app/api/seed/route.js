@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 
-import { handleCorsOptions } from "../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../lib/cors.js";
 
 const prisma = new PrismaClient();
 

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -24,11 +24,7 @@ export async function GET(request) {
 
     if (!admin) {
       return Response.json(
-        { success: false, error: "Admin tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Admin tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     return Response.json(
@@ -41,17 +37,10 @@ export async function GET(request) {
           role: "Admin",
           created_at: admin.created_at
         }
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching profile:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data profile" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data profile" }, { status: 500, headers: getCorsHeaders() });
   }
 }

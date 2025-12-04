@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -29,29 +29,18 @@ export async function GET(request, { params }) {
 
     if (!kategori) {
       return Response.json(
-        { success: false, error: "Kategori tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Kategori tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     return Response.json(
       {
         success: true,
         data: kategori
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching kategori:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data kategori" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data kategori" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -84,18 +73,11 @@ export async function PUT(request, { params }) {
         success: true,
         message: "Kategori berhasil diupdate",
         data: kategori
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error updating kategori:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupdate kategori" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupdate kategori" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -114,11 +96,7 @@ export async function DELETE(request, { params }) {
         { 
           success: false, 
           error: `Tidak dapat menghapus kategori. Masih ada ${produkCount} produk yang menggunakan kategori ini.` 
-        },
-        {
-          status: 400
-        }
-      );
+        }, { status: 400, headers: getCorsHeaders() });
     }
 
     await prisma.categori.delete({
@@ -129,17 +107,10 @@ export async function DELETE(request, { params }) {
       {
         success: true,
         message: "Kategori berhasil dihapus"
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting kategori:", error);
     return Response.json(
-      { success: false, error: "Gagal menghapus kategori" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menghapus kategori" }, { status: 500, headers: getCorsHeaders() });
   }
 }

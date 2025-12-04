@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-import { handleCorsOptions } from "../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../lib/cors.js";
 
 const execAsync = promisify(exec);
 

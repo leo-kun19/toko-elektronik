@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -24,29 +24,18 @@ export async function GET(request, { params }) {
 
     if (!produk) {
       return Response.json(
-        { success: false, error: "Produk tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Produk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     return Response.json(
       {
         success: true,
         data: produk
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching produk:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data produk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data produk" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -80,18 +69,11 @@ export async function PUT(request, { params }) {
         success: true,
         message: "Produk berhasil diupdate",
         data: produk
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error updating produk:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupdate produk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupdate produk" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -108,17 +90,10 @@ export async function DELETE(request, { params }) {
       {
         success: true,
         message: "Produk berhasil dihapus"
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting produk:", error);
     return Response.json(
-      { success: false, error: "Gagal menghapus produk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menghapus produk" }, { status: 500, headers: getCorsHeaders() });
   }
 }

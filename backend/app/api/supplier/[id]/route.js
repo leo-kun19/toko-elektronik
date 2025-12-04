@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -23,29 +23,18 @@ export async function GET(request, { params }) {
 
     if (!supplier) {
       return Response.json(
-        { success: false, error: "Supplier tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Supplier tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     return Response.json(
       {
         success: true,
         data: supplier
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching supplier:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data supplier" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data supplier" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -69,18 +58,11 @@ export async function PUT(request, { params }) {
         success: true,
         message: "Supplier berhasil diupdate",
         data: supplier
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error updating supplier:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupdate supplier" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupdate supplier" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -99,11 +81,7 @@ export async function DELETE(request, { params }) {
         { 
           success: false, 
           error: `Tidak dapat menghapus supplier. Masih ada ${produkCount} produk yang menggunakan supplier ini.` 
-        },
-        {
-          status: 400
-        }
-      );
+        }, { status: 400, headers: getCorsHeaders() });
     }
 
     await prisma.suplier.delete({
@@ -114,17 +92,10 @@ export async function DELETE(request, { params }) {
       {
         success: true,
         message: "Supplier berhasil dihapus"
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting supplier:", error);
     return Response.json(
-      { success: false, error: "Gagal menghapus supplier" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menghapus supplier" }, { status: 500, headers: getCorsHeaders() });
   }
 }
