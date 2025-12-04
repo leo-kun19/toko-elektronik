@@ -2,7 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
-import { handleCorsOptions } from "../lib/cors.js";
+import { handleCorsOptions } from "../../lib/cors.js";
 
 // POST - Upload gambar
 

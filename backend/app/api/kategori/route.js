@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../lib/cors.js";
+import { handleCorsOptions } from "../../lib/cors.js";
 
 const prisma = new PrismaClient();
 

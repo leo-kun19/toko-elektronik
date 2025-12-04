@@ -18,13 +18,19 @@ def add_cors_to_route(file_path):
         return False
     
     # Determine relative path to cors.js based on file depth
-    depth = str(file_path).count('\\') - str(file_path).find('app\\api')
-    if depth <= 2:
-        cors_path = '../lib/cors.js'
-    elif depth == 3:
-        cors_path = '../../lib/cors.js'
-    else:
-        cors_path = '../../../lib/cors.js'
+    # Count how many levels deep from app/api/
+    path_str = str(file_path).replace('\\', '/')
+    api_index = path_str.find('app/api/')
+    if api_index == -1:
+        return False
+    
+    after_api = path_str[api_index + len('app/api/'):]
+    depth = after_api.count('/')
+    
+    # depth 0 = app/api/route.js -> ../lib/cors.js
+    # depth 1 = app/api/stok/route.js -> ../../lib/cors.js
+    # depth 2 = app/api/stok/[id]/route.js -> ../../../lib/cors.js
+    cors_path = '../' * (depth + 1) + 'lib/cors.js'
     
     # Add import at the top (after other imports)
     import_line = f'import {{ handleCorsOptions }} from "{cors_path}";\n'

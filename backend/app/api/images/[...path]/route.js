@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-import { handleCorsOptions } from "../lib/cors.js";
+import { handleCorsOptions } from "../../../lib/cors.js";
 
 
 export async function OPTIONS() {
