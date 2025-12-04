@@ -7,13 +7,16 @@ const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
-    // Security: Only allow in development or with secret key
+    // Security: Only allow with secret key
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get("secret");
     
-    if (process.env.NODE_ENV === "production" && secret !== process.env.SEED_SECRET) {
+    // Allow test123 for initial setup, or use SEED_SECRET if set
+    const validSecret = process.env.SEED_SECRET || "test123";
+    
+    if (secret !== validSecret) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Unauthorized - Invalid secret" },
         { status: 401 }
       );
     }
