@@ -1,19 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { handleCorsOptions, corsResponse } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
 export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
+  return handleCorsOptions();
 }
 
 export async function GET() {
@@ -33,15 +26,9 @@ export async function POST(request) {
     const { username, password } = await request.json();
 
     if (!username || !password) {
-      return Response.json(
+      return corsResponse(
         { error: "Username dan password harus diisi" },
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
-        }
+        400
       );
     }
 
@@ -50,30 +37,18 @@ export async function POST(request) {
     });
 
     if (!admin) {
-      return Response.json(
+      return corsResponse(
         { error: "Username atau password salah" },
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
-        }
+        401
       );
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
 
     if (!isPasswordValid) {
-      return Response.json(
+      return corsResponse(
         { error: "Username atau password salah" },
-        {
-          status: 401,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
-        }
+        401
       );
     }
 
@@ -86,34 +61,20 @@ export async function POST(request) {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    return Response.json(
-      {
-        message: "Login berhasil",
-        token,
-        admin: {
-          admin_id: admin.admin_id,
-          username: admin.username,
-          created_at: admin.created_at,
-        },
+    return corsResponse({
+      message: "Login berhasil",
+      token,
+      admin: {
+        admin_id: admin.admin_id,
+        username: admin.username,
+        created_at: admin.created_at,
       },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
-      }
-    );
+    });
   } catch (error) {
     console.error("Login error:", error);
-    return Response.json(
+    return corsResponse(
       { error: "Terjadi kesalahan pada server" },
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
-      }
+      500
     );
   }
 }
