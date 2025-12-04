@@ -9,6 +9,8 @@ import {
 import Button from "../components/ui/button";
 import { useAppContext } from "../store";
 import TambahBarangModal from "../components/modals/TambahBarangModal";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 import {
   Search,
   Edit2,
@@ -219,7 +221,7 @@ export default function StokPage() {
         const formData = new FormData();
         formData.append("file", data.file);
         
-        const uploadRes = await fetch("http://localhost:3001/api/upload", {
+        const uploadRes = await fetch(`${API_URL}/api/upload`, {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -440,7 +442,7 @@ export default function StokPage() {
         const formData = new FormData();
         formData.append("file", selectedFile);
         
-        const uploadRes = await fetch("http://localhost:3001/api/upload", {
+        const uploadRes = await fetch(`${API_URL}/api/upload`, {
           method: "POST",
           body: formData,
           credentials: "include",
