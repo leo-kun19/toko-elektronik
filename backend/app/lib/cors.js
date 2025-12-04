@@ -1,5 +1,8 @@
 // CORS Helper untuk production & development
-const ALLOWED_ORIGIN = process.env.FRONTEND_URL || "http://localhost:5173";
+const ALLOWED_ORIGIN = process.env.FRONTEND_URL || "*";
+
+console.log('🌍 CORS Helper - FRONTEND_URL:', process.env.FRONTEND_URL);
+console.log('🌍 CORS Helper - ALLOWED_ORIGIN:', ALLOWED_ORIGIN);
 
 export function getCorsHeaders() {
   return {
