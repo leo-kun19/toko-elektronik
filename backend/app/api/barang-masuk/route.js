@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 const prisma = new PrismaClient();
 
 // GET - Ambil semua barang masuk
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);

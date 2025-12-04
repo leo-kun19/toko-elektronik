@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 const prisma = new PrismaClient();
 
 // GET - Ambil kategori by ID
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function GET(request, { params }) {
   try {
     const id = parseInt(params.id);

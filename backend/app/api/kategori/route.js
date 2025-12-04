@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 const prisma = new PrismaClient();
 
 // GET - Ambil semua kategori
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function GET() {
   try {
     const kategori = await prisma.categori.findMany({
