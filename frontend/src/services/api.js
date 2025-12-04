@@ -1,7 +1,10 @@
 // API Service Layer
+// VITE_API_URL harus HTTPS untuk production
 const API_BASE_URL = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL}/api`
   : "http://localhost:3001/api";
+
+console.log('🌍 API_BASE_URL:', API_BASE_URL);
 
 // Helper function untuk fetch dengan error handling
 async function fetchAPI(endpoint, options = {}) {

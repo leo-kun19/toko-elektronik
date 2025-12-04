@@ -6,7 +6,16 @@ import { handleCorsOptions, corsResponse } from "../../../lib/cors.js";
 const prisma = new PrismaClient();
 
 export async function OPTIONS() {
-  return handleCorsOptions();
+  console.log('🔥 OPTIONS handler called for /api/auth/login');
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+    },
+  });
 }
 
 export async function GET() {
