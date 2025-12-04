@@ -1,7 +1,10 @@
 // API Service Layer
+// Use relative path for production (Vercel proxy), absolute for local dev
 const API_BASE_URL = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL}/api`
-  : "http://localhost:3001/api";
+  : import.meta.env.PROD 
+    ? "/api"  // Production: use Vercel proxy
+    : "http://localhost:3001/api";  // Development: direct to backend
 
 // Helper function untuk fetch dengan error handling
 async function fetchAPI(endpoint, options = {}) {

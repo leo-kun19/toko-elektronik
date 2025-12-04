@@ -10,7 +10,9 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+    // Use relative path for production (Vercel proxy), absolute for local dev
+    const API_URL = import.meta.env.VITE_API_URL 
+      || (import.meta.env.PROD ? "" : "http://localhost:3001");
 
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
