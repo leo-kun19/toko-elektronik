@@ -20,4 +20,13 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    port: 4173,
+    host: '0.0.0.0',
+    allowedHosts: [
+      'ginbers-elektonik-production.up.railway.app',
+      '.railway.app',
+      'localhost',
+    ],
+  },
 });
