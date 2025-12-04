@@ -61,7 +61,7 @@ export async function GET(request) {
       harga: parseFloat(p.price),
       stok: p.stock,
       tanggal: p.updated_at ? p.updated_at.toISOString().split('T')[0] : "",
-      gambar: p.image ? `http://localhost:3001/api${p.image}` : "http://localhost:3001/api/images/default.jpg"
+      gambar: p.image ? `/api${p.image}` : "/api/images/default.jpg"
     }));
 
     // Filter by tanggal jika ada
@@ -149,7 +149,7 @@ export async function POST(request) {
       harga: parseFloat(produk.price),
       stok: produk.stock,
       tanggal: tanggal || new Date().toISOString().split('T')[0],
-      gambar: produk.image ? `http://localhost:3001/api${produk.image}` : "http://localhost:3001/api/images/default.jpg"
+      gambar: produk.image ? `/api${produk.image}` : "/api/images/default.jpg"
     };
 
     return Response.json(

@@ -58,7 +58,7 @@ export async function GET(request) {
       qty: item.qty,
       total: parseFloat(item.total),
       tanggal: item.tanggal ? item.tanggal.toISOString().split('T')[0] : "",
-      gambar: item.gambar ? `http://localhost:3001/api${item.gambar}` : "http://localhost:3001/api/images/default.jpg"
+      gambar: item.gambar ? `/api${item.gambar}` : "/api/images/default.jpg"
     }));
 
     return Response.json(
