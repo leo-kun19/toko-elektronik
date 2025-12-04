@@ -2,30 +2,34 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // CORS Configuration - Allow all origins for now
-  async headers() {
-    return [
-      {
-        source: "/api/:path*",
-        headers: [
-          { key: "Access-Control-Allow-Credentials", value: "true" },
-          { key: "Access-Control-Allow-Origin", value: "*" },
-          { key: "Access-Control-Allow-Methods", value: "GET,DELETE,PATCH,POST,PUT,OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Requested-With, Accept" },
-          { key: "Access-Control-Max-Age", value: "86400" },
-        ],
-      },
-    ];
-  },
-  
-  // Serve static files dari folder image
+  // Serve frontend static files
   async rewrites() {
-    return [
-      {
-        source: '/images/:path*',
-        destination: '/../image/:path*',
-      },
-    ];
+    return {
+      beforeFiles: [
+        // API routes - no rewrite needed
+      ],
+      afterFiles: [
+        // Serve frontend for all non-API routes
+        {
+          source: '/:path*',
+          destination: '/index.html',
+          has: [
+            {
+              type: 'header',
+              key: 'accept',
+              value: '(.*text/html.*)',
+            },
+          ],
+        },
+      ],
+      fallback: [
+        // Fallback to index.html for SPA routing
+        {
+          source: '/:path*',
+          destination: '/index.html',
+        },
+      ],
+    };
   },
 };
 

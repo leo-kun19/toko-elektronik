@@ -10,7 +10,7 @@ import Button from "../components/ui/button";
 import { useAppContext } from "../store";
 import TambahBarangModal from "../components/modals/TambahBarangModal";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_URL = "";  // Same domain, use relative URL
 import {
   Search,
   Edit2,
