@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil supplier by ID
 export async function GET(request, { params }) {
   try {
@@ -22,19 +10,15 @@ export async function GET(request, { params }) {
     const supplier = await prisma.suplier.findUnique({
       where: { suplier_id: id },
       include: {
-        produk: true,
-      },
+        produk: true
+      }
     });
 
     if (!supplier) {
       return Response.json(
         { success: false, error: "Supplier tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -42,13 +26,9 @@ export async function GET(request, { params }) {
     return Response.json(
       {
         success: true,
-        data: supplier,
+        data: supplier
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -56,11 +36,7 @@ export async function GET(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengambil data supplier" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -77,21 +53,17 @@ export async function PUT(request, { params }) {
       where: { suplier_id: id },
       data: {
         nama: nama || undefined,
-        contact: contact !== undefined ? contact : undefined,
-      },
+        contact: contact !== undefined ? contact : undefined
+      }
     });
 
     return Response.json(
       {
         success: true,
         message: "Supplier berhasil diupdate",
-        data: supplier,
+        data: supplier
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -99,11 +71,7 @@ export async function PUT(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengupdate supplier" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -116,7 +84,7 @@ export async function DELETE(request, { params }) {
 
     // Cek apakah ada produk yang menggunakan supplier ini
     const produkCount = await prisma.produk.count({
-      where: { suplier_id: id },
+      where: { suplier_id: id }
     });
 
     if (produkCount > 0) {
@@ -126,29 +94,21 @@ export async function DELETE(request, { params }) {
           error: `Tidak dapat menghapus supplier. Masih ada ${produkCount} produk yang menggunakan supplier ini.` 
         },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
 
     await prisma.suplier.delete({
-      where: { suplier_id: id },
+      where: { suplier_id: id }
     });
 
     return Response.json(
       {
         success: true,
-        message: "Supplier berhasil dihapus",
+        message: "Supplier berhasil dihapus"
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -156,11 +116,7 @@ export async function DELETE(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal menghapus supplier" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

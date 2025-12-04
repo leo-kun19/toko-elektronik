@@ -2,26 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil 3 barang masuk terbaru
 export async function GET() {
   try {
     const barangMasuk = await prisma.barang_masuk.findMany({
       take: 3,
       orderBy: {
-        created_at: "desc",
-      },
+        created_at: "desc"
+      }
     });
 
     // Transform ke format frontend
@@ -36,19 +24,15 @@ export async function GET() {
       qty: item.qty,
       total: parseFloat(item.total),
       tanggal: item.tanggal ? item.tanggal.toISOString().split('T')[0] : "",
-      gambar: item.gambar ? `http://localhost:3001/api${item.gambar}` : "http://localhost:3001/api/images/default.jpg",
+      gambar: item.gambar ? `http://localhost:3001/api${item.gambar}` : "http://localhost:3001/api/images/default.jpg"
     }));
 
     return Response.json(
       {
         success: true,
-        data: transformed,
+        data: transformed
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -56,11 +40,7 @@ export async function GET() {
     return Response.json(
       { success: false, error: "Gagal mengambil data barang masuk terbaru" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

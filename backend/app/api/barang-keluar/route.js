@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil semua barang keluar
 export async function GET(request) {
   try {
@@ -28,7 +16,7 @@ export async function GET(request) {
     if (search) {
       where.nama = {
         contains: search,
-        mode: "insensitive",
+        mode: "insensitive"
       };
     }
     
@@ -47,8 +35,8 @@ export async function GET(request) {
     const barangKeluar = await prisma.barang_keluar.findMany({
       where,
       orderBy: {
-        created_at: "desc",
-      },
+        created_at: "desc"
+      }
     });
 
     // Transform ke format frontend
@@ -63,19 +51,15 @@ export async function GET(request) {
       qty: item.qty,
       total: parseFloat(item.total),
       tanggal: item.tanggal ? item.tanggal.toISOString().split('T')[0] : "",
-      gambar: item.gambar ? `http://localhost:3001/api${item.gambar}` : "http://localhost:3001/api/images/default.jpg",
+      gambar: item.gambar ? `http://localhost:3001/api${item.gambar}` : "http://localhost:3001/api/images/default.jpg"
     }));
 
     return Response.json(
       {
         success: true,
-        data: transformed,
+        data: transformed
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -83,11 +67,7 @@ export async function GET(request) {
     return Response.json(
       { success: false, error: "Gagal mengambil data barang keluar" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -103,11 +83,7 @@ export async function POST(request) {
       return Response.json(
         { success: false, error: "Nama, harga, dan qty harus diisi" },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -121,9 +97,9 @@ export async function POST(request) {
       where: {
         name: {
           equals: nama,
-          mode: "insensitive",
-        },
-      },
+          mode: "insensitive"
+        }
+      }
     });
 
     if (produk && produk.stock < qtyNum) {
@@ -133,11 +109,7 @@ export async function POST(request) {
           error: `Stok tidak mencukupi. Stok tersedia: ${produk.stock}` 
         },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -152,8 +124,8 @@ export async function POST(request) {
         qty: qtyNum,
         total,
         tanggal: tanggal ? new Date(tanggal) : new Date(),
-        gambar: gambar || null,
-      },
+        gambar: gambar || null
+      }
     });
 
     // Update stok produk jika ada
@@ -162,8 +134,8 @@ export async function POST(request) {
         where: { produk_id: produk.produk_id },
         data: {
           stock: Math.max(0, produk.stock - qtyNum),
-          updated_at: new Date(),
-        },
+          updated_at: new Date()
+        }
       });
     }
 
@@ -171,14 +143,10 @@ export async function POST(request) {
       {
         success: true,
         message: "Barang keluar berhasil ditambahkan",
-        data: barangKeluar,
+        data: barangKeluar
       },
       {
-        status: 201,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 201
       }
     );
   } catch (error) {
@@ -186,11 +154,7 @@ export async function POST(request) {
     return Response.json(
       { success: false, error: "Gagal menambahkan barang keluar" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

@@ -16,8 +16,8 @@ export async function GET() {
     endpoint: "/api/auth/login",
     body: {
       username: "string",
-      password: "string",
-    },
+      password: "string"
+    }
   });
 }
 
@@ -33,7 +33,7 @@ export async function POST(request) {
     }
 
     const admin = await prisma.admin.findUnique({
-      where: { username },
+      where: { username }
     });
 
     if (!admin) {
@@ -55,7 +55,7 @@ export async function POST(request) {
     const token = jwt.sign(
       {
         admin_id: admin.admin_id,
-        username: admin.username,
+        username: admin.username
       },
       process.env.JWT_SECRET || "your-jwt-secret-key",
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
@@ -67,8 +67,8 @@ export async function POST(request) {
       admin: {
         admin_id: admin.admin_id,
         username: admin.username,
-        created_at: admin.created_at,
-      },
+        created_at: admin.created_at
+      }
     });
   } catch (error) {
     console.error("Login error:", error);

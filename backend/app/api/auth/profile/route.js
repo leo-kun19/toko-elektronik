@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Get current user profile
 export async function GET(request) {
   try {
@@ -23,19 +11,15 @@ export async function GET(request) {
       select: {
         admin_id: true,
         username: true,
-        created_at: true,
-      },
+        created_at: true
+      }
     });
 
     if (!admin) {
       return Response.json(
         { success: false, error: "Admin tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -48,14 +32,10 @@ export async function GET(request) {
           username: admin.username,
           name: admin.username, // Bisa ditambahkan field 'name' di schema jika perlu
           role: "Admin",
-          created_at: admin.created_at,
-        },
+          created_at: admin.created_at
+        }
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -63,11 +43,7 @@ export async function GET(request) {
     return Response.json(
       { success: false, error: "Gagal mengambil data profile" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

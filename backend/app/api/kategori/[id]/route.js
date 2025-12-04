@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil kategori by ID
 export async function GET(request, { params }) {
   try {
@@ -26,21 +14,17 @@ export async function GET(request, { params }) {
         admin: {
           select: {
             admin_id: true,
-            username: true,
-          },
-        },
-      },
+            username: true
+          }
+        }
+      }
     });
 
     if (!kategori) {
       return Response.json(
         { success: false, error: "Kategori tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -48,13 +32,9 @@ export async function GET(request, { params }) {
     return Response.json(
       {
         success: true,
-        data: kategori,
+        data: kategori
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -62,11 +42,7 @@ export async function GET(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengambil data kategori" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -84,29 +60,25 @@ export async function PUT(request, { params }) {
       data: {
         name: name || undefined,
         description: description !== undefined ? description : undefined,
-        admin_id: admin_id !== undefined ? (admin_id ? parseInt(admin_id) : null) : undefined,
+        admin_id: admin_id !== undefined ? (admin_id ? parseInt(admin_id) : null) : undefined
       },
       include: {
         admin: {
           select: {
             admin_id: true,
-            username: true,
-          },
-        },
-      },
+            username: true
+          }
+        }
+      }
     });
 
     return Response.json(
       {
         success: true,
         message: "Kategori berhasil diupdate",
-        data: kategori,
+        data: kategori
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -114,11 +86,7 @@ export async function PUT(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengupdate kategori" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -131,7 +99,7 @@ export async function DELETE(request, { params }) {
 
     // Cek apakah ada produk yang menggunakan kategori ini
     const produkCount = await prisma.produk.count({
-      where: { categori_id: id },
+      where: { categori_id: id }
     });
 
     if (produkCount > 0) {
@@ -141,29 +109,21 @@ export async function DELETE(request, { params }) {
           error: `Tidak dapat menghapus kategori. Masih ada ${produkCount} produk yang menggunakan kategori ini.` 
         },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
 
     await prisma.categori.delete({
-      where: { categori_id: id },
+      where: { categori_id: id }
     });
 
     return Response.json(
       {
         success: true,
-        message: "Kategori berhasil dihapus",
+        message: "Kategori berhasil dihapus"
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -171,11 +131,7 @@ export async function DELETE(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal menghapus kategori" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

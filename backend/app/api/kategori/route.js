@@ -2,18 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil semua kategori
 export async function GET() {
   try {
@@ -23,25 +11,21 @@ export async function GET() {
         admin: {
           select: {
             admin_id: true,
-            username: true,
-          },
-        },
+            username: true
+          }
+        }
       },
       orderBy: {
-        categori_id: "desc",
-      },
+        categori_id: "desc"
+      }
     });
 
     return Response.json(
       {
         success: true,
-        data: kategori,
+        data: kategori
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -49,11 +33,7 @@ export async function GET() {
     return Response.json(
       { success: false, error: "Gagal mengambil data kategori" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -69,11 +49,7 @@ export async function POST(request) {
       return Response.json(
         { success: false, error: "Nama kategori harus diisi" },
         {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 400
         }
       );
     }
@@ -82,30 +58,26 @@ export async function POST(request) {
       data: {
         name,
         description: description || null,
-        admin_id: admin_id ? parseInt(admin_id) : null,
+        admin_id: admin_id ? parseInt(admin_id) : null
       },
       include: {
         admin: {
           select: {
             admin_id: true,
-            username: true,
-          },
-        },
-      },
+            username: true
+          }
+        }
+      }
     });
 
     return Response.json(
       {
         success: true,
         message: "Kategori berhasil ditambahkan",
-        data: kategori,
+        data: kategori
       },
       {
-        status: 201,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 201
       }
     );
   } catch (error) {
@@ -113,11 +85,7 @@ export async function POST(request) {
     return Response.json(
       { success: false, error: "Gagal menambahkan kategori" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }

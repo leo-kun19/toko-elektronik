@@ -2,36 +2,20 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
-
 // GET - Ambil barang masuk by ID
 export async function GET(request, { params }) {
   try {
     const id = parseInt(params.id);
 
     const barangMasuk = await prisma.barang_masuk.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!barangMasuk) {
       return Response.json(
         { success: false, error: "Barang masuk tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -39,13 +23,9 @@ export async function GET(request, { params }) {
     return Response.json(
       {
         success: true,
-        data: barangMasuk,
+        data: barangMasuk
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -53,11 +33,7 @@ export async function GET(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengambil data barang masuk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -72,18 +48,14 @@ export async function PUT(request, { params }) {
 
     // Ambil data lama untuk menghitung selisih qty
     const oldData = await prisma.barang_masuk.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!oldData) {
       return Response.json(
         { success: false, error: "Barang masuk tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
@@ -103,8 +75,8 @@ export async function PUT(request, { params }) {
         qty: qty !== undefined ? qtyNum : undefined,
         total,
         tanggal: tanggal ? new Date(tanggal) : undefined,
-        gambar: gambar !== undefined ? gambar : undefined,
-      },
+        gambar: gambar !== undefined ? gambar : undefined
+      }
     });
 
     // Update stok produk jika qty berubah
@@ -114,9 +86,9 @@ export async function PUT(request, { params }) {
         where: {
           name: {
             equals: nama || oldData.nama,
-            mode: "insensitive",
-          },
-        },
+            mode: "insensitive"
+          }
+        }
       });
 
       if (produk) {
@@ -124,8 +96,8 @@ export async function PUT(request, { params }) {
           where: { produk_id: produk.produk_id },
           data: {
             stock: Math.max(0, produk.stock + diffQty),
-            updated_at: new Date(),
-          },
+            updated_at: new Date()
+          }
         });
       }
     }
@@ -134,13 +106,9 @@ export async function PUT(request, { params }) {
       {
         success: true,
         message: "Barang masuk berhasil diupdate",
-        data: barangMasuk,
+        data: barangMasuk
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -148,11 +116,7 @@ export async function PUT(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal mengupdate barang masuk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
@@ -164,24 +128,20 @@ export async function DELETE(request, { params }) {
     const id = parseInt(params.id);
 
     const barangMasuk = await prisma.barang_masuk.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!barangMasuk) {
       return Response.json(
         { success: false, error: "Barang masuk tidak ditemukan" },
         {
-          status: 404,
-          headers: {
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Credentials": "true",
-          },
+          status: 404
         }
       );
     }
 
     await prisma.barang_masuk.delete({
-      where: { id },
+      where: { id }
     });
 
     // Kurangi stok produk
@@ -189,9 +149,9 @@ export async function DELETE(request, { params }) {
       where: {
         name: {
           equals: barangMasuk.nama,
-          mode: "insensitive",
-        },
-      },
+          mode: "insensitive"
+        }
+      }
     });
 
     if (produk) {
@@ -199,21 +159,17 @@ export async function DELETE(request, { params }) {
         where: { produk_id: produk.produk_id },
         data: {
           stock: Math.max(0, produk.stock - barangMasuk.qty),
-          updated_at: new Date(),
-        },
+          updated_at: new Date()
+        }
       });
     }
 
     return Response.json(
       {
         success: true,
-        message: "Barang masuk berhasil dihapus",
+        message: "Barang masuk berhasil dihapus"
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
       }
     );
   } catch (error) {
@@ -221,11 +177,7 @@ export async function DELETE(request, { params }) {
     return Response.json(
       { success: false, error: "Gagal menghapus barang masuk" },
       {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:5173",
-          "Access-Control-Allow-Credentials": "true",
-        },
+        status: 500
       }
     );
   }
