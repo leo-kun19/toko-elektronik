@@ -86,6 +86,8 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
+    console.log("POST /api/stok - Request body:", JSON.stringify(body, null, 2));
+    
     const { brand, nama, kategori, supplier, deskripsi, harga, stok, tanggal, gambar } = body;
 
     if (!nama || !harga) {
@@ -96,47 +98,57 @@ export async function POST(request) {
     // Cari atau buat kategori
     let kategoriId = null;
     if (kategori) {
+      console.log("Looking for kategori:", kategori);
       let kat = await prisma.categori.findFirst({
         where: { name: kategori }
       });
       if (!kat) {
+        console.log("Creating new kategori:", kategori);
         kat = await prisma.categori.create({
           data: { name: kategori, description: null }
         });
       }
       kategoriId = kat.categori_id;
+      console.log("Kategori ID:", kategoriId);
     }
 
     // Cari atau buat supplier
     let supplierId = null;
     if (supplier) {
+      console.log("Looking for supplier:", supplier);
       let sup = await prisma.suplier.findFirst({
         where: { nama: supplier }
       });
       if (!sup) {
+        console.log("Creating new supplier:", supplier);
         sup = await prisma.suplier.create({
           data: { nama: supplier, contact: null }
         });
       }
       supplierId = sup.suplier_id;
+      console.log("Supplier ID:", supplierId);
     }
 
     // Buat produk
+    const produkData = {
+      name: nama,
+      description: deskripsi || null,
+      image: gambar || null,
+      price: parseFloat(harga) || 0,
+      stock: parseInt(stok) || 0,
+      categori_id: kategoriId,
+      suplier_id: supplierId
+    };
+    console.log("Creating produk with data:", JSON.stringify(produkData, null, 2));
+    
     const produk = await prisma.produk.create({
-      data: {
-        name: nama,
-        description: deskripsi || null,
-        image: gambar || null,
-        price: parseFloat(harga),
-        stock: parseInt(stok) || 0,
-        categori_id: kategoriId,
-        suplier_id: supplierId
-      },
+      data: produkData,
       include: {
         categori: true,
         suplier: true
       }
     });
+    console.log("Produk created:", produk.produk_id);
 
     // Transform ke format frontend
     const result = {
@@ -160,7 +172,13 @@ export async function POST(request) {
       }, { status: 201, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error creating stok:", error);
+    console.error("Error stack:", error.stack);
     return Response.json(
-      { success: false, error: "Gagal menambahkan stok barang" }, { status: 500, headers: getCorsHeaders() });
+      { 
+        success: false, 
+        error: "Gagal menambahkan stok barang",
+        detail: error.message,
+        code: error.code
+      }, { status: 500, headers: getCorsHeaders() });
   }
 }
