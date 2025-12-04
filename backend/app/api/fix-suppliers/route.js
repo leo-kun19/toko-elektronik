@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// GET - Fix missing suppliers in database
+// GET - Fix/Update suppliers in database
 export async function GET(request) {
   const headers = {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ export async function GET(request) {
 
   try {
     // Supplier lengkap sesuai dengan yang dibutuhkan produk
-    const suppliersToAdd = [
+    const suppliersData = [
       { suplier_id: 1, nama: "PT Sumber Elektronik Jaya", contact: "081234567890" },
       { suplier_id: 2, nama: "CV Makmur Abadi", contact: "082233445566" },
       { suplier_id: 3, nama: "PT Digital Niaga Indonesia", contact: "081998877665" },
@@ -26,23 +26,21 @@ export async function GET(request) {
 
     const results = [];
 
-    for (const supplier of suppliersToAdd) {
-      // Check if supplier exists
-      const existing = await prisma.suplier.findUnique({
-        where: { suplier_id: supplier.suplier_id }
+    for (const supplier of suppliersData) {
+      // Update or create supplier (upsert)
+      const updated = await prisma.suplier.upsert({
+        where: { suplier_id: supplier.suplier_id },
+        update: {
+          nama: supplier.nama,
+          contact: supplier.contact
+        },
+        create: {
+          suplier_id: supplier.suplier_id,
+          nama: supplier.nama,
+          contact: supplier.contact
+        }
       });
-
-      if (!existing) {
-        // Create supplier with specific ID using raw query
-        await prisma.$executeRaw`
-          INSERT INTO suplier (suplier_id, nama, contact) 
-          VALUES (${supplier.suplier_id}, ${supplier.nama}, ${supplier.contact})
-          ON CONFLICT (suplier_id) DO NOTHING
-        `;
-        results.push({ ...supplier, status: "created" });
-      } else {
-        results.push({ ...supplier, status: "exists", current: existing });
-      }
+      results.push({ ...supplier, status: "updated", result: updated });
     }
 
     // Get all suppliers after fix
@@ -52,7 +50,7 @@ export async function GET(request) {
 
     return Response.json({
       success: true,
-      message: "Suppliers fixed successfully",
+      message: "Suppliers updated successfully",
       results: results,
       allSuppliers: allSuppliers
     }, { status: 200, headers });
