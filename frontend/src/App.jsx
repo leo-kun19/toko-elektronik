@@ -1,7 +1,7 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useAppContext } from "./store"; 
+import { AppProvider } from "./store";
 
 import Sidebar from "./components/layout/sidebar.jsx";
 import Header from "./components/layout/header.jsx";
@@ -12,6 +12,7 @@ import Stok from "./routes/stok.jsx";
 import Supplier from "./routes/supplier.jsx";
 import Kategori from "./routes/kategori.jsx";
 import Login from "./routes/login.jsx";
+import LandingPage from "./routes/landingPage.jsx";
 
 
 function AppContent() {
@@ -19,17 +20,23 @@ function AppContent() {
   const { lowStockCount } = useAppContext();
 
   const isAuthPage =
-    location.pathname === "/" || 
-    location.pathname === "/login";
+    location.pathname === "/admin";
 
   if (isAuthPage) {
     return (
       <div className="min-h-screen bg-[#cdd9ff] flex items-center justify-center p-4">
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Login />} />
         </Routes>
       </div>
+    );
+  }
+
+  if (location.pathname === "/") {
+    return (
+      <AppProvider>
+        <LandingPage /> 
+      </AppProvider>
     );
   }
 
@@ -52,9 +59,6 @@ function AppContent() {
     </div>
   );
 }
-
-// Pastikan AppProvider juga diimpor
-import { AppProvider } from "./store";
 
 export default function App() {
   return (
