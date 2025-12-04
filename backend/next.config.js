@@ -2,21 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // Serve frontend static files
+  // Serve frontend static files - NO rewrites for static files
   async rewrites() {
-    return {
-      beforeFiles: [
-        // API routes - no rewrite needed
-      ],
-      afterFiles: [],
-      fallback: [
-        // Only rewrite non-asset paths to index.html for SPA routing
-        {
-          source: '/:path((?!assets|api|images|_next).*)',
-          destination: '/index.html',
-        },
-      ],
-    };
+    return [];
   },
 };
 
