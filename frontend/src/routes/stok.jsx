@@ -932,7 +932,6 @@ export default function StokPage() {
                   <th className="py-3 px-4 text-right">Harga</th>
                   <th className="py-3 px-4 text-center">Kuantitas</th>
                   <th className="py-3 px-4 text-center">Tanggal Update</th>
-                  <th className="py-3 px-4 text-center">Action</th>
                   <th className="py-3 px-4 text-center">Detail</th>
                 </tr>
               </thead>
@@ -953,22 +952,6 @@ export default function StokPage() {
                     </td>
                     <td className="py-3 px-4 text-center">{item.qty}</td>
                     <td className="py-3 px-4 text-center">{item.tanggal}</td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex justify-center gap-3">
-                        <button onClick={() => openModal("editKeluar", item)}>
-                          <Edit2
-                            className="text-blue-500 cursor-pointer"
-                            size={16}
-                          />
-                        </button>
-                        <button onClick={() => openModal("deleteKeluar", item)}>
-                          <Trash2
-                            className="text-red-500 cursor-pointer"
-                            size={16}
-                          />
-                        </button>
-                      </div>
-                    </td>
                     <td className="py-3 px-4 text-center">
                       <button onClick={() => openModal("viewKeluar", item)}>
                         <Eye
@@ -1076,7 +1059,6 @@ export default function StokPage() {
                   <th className="py-3 px-4 text-right">Harga</th>
                   <th className="py-3 px-4 text-center">Kuantitas</th>
                   <th className="py-3 px-4 text-center">Tanggal Update</th>
-                  <th className="py-3 px-4 text-center">Action</th>
                   <th className="py-3 px-4 text-center">Detail</th>
                 </tr>
               </thead>
@@ -1097,22 +1079,6 @@ export default function StokPage() {
                     </td>
                     <td className="py-3 px-4 text-center">{item.qty}</td>
                     <td className="py-3 px-4 text-center">{item.tanggal}</td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex justify-center gap-3">
-                        <button onClick={() => openModal("editMasuk", item)}>
-                          <Edit2
-                            className="text-blue-500 cursor-pointer"
-                            size={16}
-                          />
-                        </button>
-                        <button onClick={() => openModal("deleteMasuk", item)}>
-                          <Trash2
-                            className="text-red-500 cursor-pointer"
-                            size={16}
-                          />
-                        </button>
-                      </div>
-                    </td>
                     <td className="py-3 px-4 text-center">
                       <button onClick={() => openModal("viewMasuk", item)}>
                         <Eye
