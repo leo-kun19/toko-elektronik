@@ -10,9 +10,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const API_URL = import.meta.env.PROD 
-      ? "https://toko-elektronik-production.up.railway.app" 
-      : "http://localhost:3001";
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
