@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -31,18 +31,11 @@ export async function GET() {
       {
         success: true,
         data: kategori
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching kategori:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data kategori" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data kategori" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -54,11 +47,7 @@ export async function POST(request) {
 
     if (!name) {
       return Response.json(
-        { success: false, error: "Nama kategori harus diisi" },
-        {
-          status: 400
-        }
-      );
+        { success: false, error: "Nama kategori harus diisi" }, { status: 400, headers: getCorsHeaders() });
     }
 
     const kategori = await prisma.categori.create({
@@ -82,18 +71,10 @@ export async function POST(request) {
         success: true,
         message: "Kategori berhasil ditambahkan",
         data: kategori
-      },
-      {
-        status: 201
-      }
-    );
+      }, { status: 201, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error creating kategori:", error);
     return Response.json(
-      { success: false, error: "Gagal menambahkan kategori" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menambahkan kategori" }, { status: 500, headers: getCorsHeaders() });
   }
 }

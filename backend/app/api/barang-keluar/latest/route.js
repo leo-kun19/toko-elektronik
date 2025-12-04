@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -38,17 +38,10 @@ export async function GET() {
       {
         success: true,
         data: transformed
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching latest barang keluar:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data barang keluar terbaru" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data barang keluar terbaru" }, { status: 500, headers: getCorsHeaders() });
   }
 }

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -74,18 +74,11 @@ export async function GET(request) {
       {
         success: true,
         data: filtered
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching stok:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data stok" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data stok" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -97,11 +90,7 @@ export async function POST(request) {
 
     if (!nama || !harga) {
       return Response.json(
-        { success: false, error: "Nama dan harga harus diisi" },
-        {
-          status: 400
-        }
-      );
+        { success: false, error: "Nama dan harga harus diisi" }, { status: 400, headers: getCorsHeaders() });
     }
 
     // Cari atau buat kategori
@@ -168,18 +157,10 @@ export async function POST(request) {
         success: true,
         message: "Stok barang berhasil ditambahkan",
         data: result
-      },
-      {
-        status: 201
-      }
-    );
+      }, { status: 201, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error creating stok:", error);
     return Response.json(
-      { success: false, error: "Gagal menambahkan stok barang" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menambahkan stok barang" }, { status: 500, headers: getCorsHeaders() });
   }
 }

@@ -1,4 +1,4 @@
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 
 export async function OPTIONS() {
@@ -13,21 +13,13 @@ export async function POST() {
       {
         success: true,
         message: 'Logout berhasil'
-      },
-      {
-        status: 200
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error('❌ Logout error:', error);
     return Response.json(
       { 
         success: false,
         error: 'Logout gagal' 
-      },
-      { 
-        status: 500
-      }
-    );
+      }, { status: 500, headers: getCorsHeaders() });
   }
 }

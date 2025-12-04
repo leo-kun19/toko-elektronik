@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -20,29 +20,18 @@ export async function GET(request, { params }) {
 
     if (!barangMasuk) {
       return Response.json(
-        { success: false, error: "Barang masuk tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Barang masuk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     return Response.json(
       {
         success: true,
         data: barangMasuk
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching barang masuk:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data barang masuk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data barang masuk" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -60,11 +49,7 @@ export async function PUT(request, { params }) {
 
     if (!oldData) {
       return Response.json(
-        { success: false, error: "Barang masuk tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Barang masuk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     const qtyNum = qty !== undefined ? parseInt(qty) : oldData.qty;
@@ -114,18 +99,11 @@ export async function PUT(request, { params }) {
         success: true,
         message: "Barang masuk berhasil diupdate",
         data: barangMasuk
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error updating barang masuk:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupdate barang masuk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupdate barang masuk" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -140,11 +118,7 @@ export async function DELETE(request, { params }) {
 
     if (!barangMasuk) {
       return Response.json(
-        { success: false, error: "Barang masuk tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Barang masuk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     await prisma.barang_masuk.delete({
@@ -175,17 +149,10 @@ export async function DELETE(request, { params }) {
       {
         success: true,
         message: "Barang masuk berhasil dihapus"
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting barang masuk:", error);
     return Response.json(
-      { success: false, error: "Gagal menghapus barang masuk" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menghapus barang masuk" }, { status: 500, headers: getCorsHeaders() });
   }
 }

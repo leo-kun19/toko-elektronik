@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import { handleCorsOptions } from "../../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../../lib/cors.js";
 
 const prisma = new PrismaClient();
 
@@ -24,11 +24,7 @@ export async function GET(request, { params }) {
 
     if (!produk) {
       return Response.json(
-        { success: false, error: "Produk tidak ditemukan" },
-        {
-          status: 404
-        }
-      );
+        { success: false, error: "Produk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
     }
 
     const result = {
@@ -45,18 +41,11 @@ export async function GET(request, { params }) {
     };
 
     return Response.json(
-      { success: true, data: result },
-      {
-      }
-    );
+      { success: true, data: result }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error fetching stok:", error);
     return Response.json(
-      { success: false, error: "Gagal mengambil data stok" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengambil data stok" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -132,18 +121,11 @@ export async function PUT(request, { params }) {
         success: true,
         message: "Stok berhasil diupdate",
         data: result
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error updating stok:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupdate stok" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupdate stok" }, { status: 500, headers: getCorsHeaders() });
   }
 }
 
@@ -160,17 +142,10 @@ export async function DELETE(request, { params }) {
       {
         success: true,
         message: "Stok berhasil dihapus"
-      },
-      {
-      }
-    );
+      }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting stok:", error);
     return Response.json(
-      { success: false, error: "Gagal menghapus stok" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal menghapus stok" }, { status: 500, headers: getCorsHeaders() });
   }
 }

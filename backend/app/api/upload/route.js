@@ -2,7 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
-import { handleCorsOptions } from "../../lib/cors.js";
+import { handleCorsOptions, getCorsHeaders } from "../../lib/cors.js";
 
 // POST - Upload gambar
 
@@ -17,33 +17,21 @@ export async function POST(request) {
 
     if (!file) {
       return Response.json(
-        { success: false, error: "File tidak ditemukan" },
-        {
-          status: 400
-        }
-      );
+        { success: false, error: "File tidak ditemukan" }, { status: 400, headers: getCorsHeaders() });
     }
 
     // Validasi tipe file
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       return Response.json(
-        { success: false, error: "Tipe file tidak didukung. Gunakan JPG, PNG, GIF, atau WebP" },
-        {
-          status: 400
-        }
-      );
+        { success: false, error: "Tipe file tidak didukung. Gunakan JPG, PNG, GIF, atau WebP" }, { status: 400, headers: getCorsHeaders() });
     }
 
     // Validasi ukuran file (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       return Response.json(
-        { success: false, error: "Ukuran file terlalu besar. Maksimal 5MB" },
-        {
-          status: 400
-        }
-      );
+        { success: false, error: "Ukuran file terlalu besar. Maksimal 5MB" }, { status: 400, headers: getCorsHeaders() });
     }
 
     // Buat folder Gambar jika belum ada
@@ -76,18 +64,10 @@ export async function POST(request) {
           fileSize: file.size,
           fileType: file.type
         }
-      },
-      {
-        status: 201
-      }
-    );
+      }, { status: 201, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error uploading file:", error);
     return Response.json(
-      { success: false, error: "Gagal mengupload file" },
-      {
-        status: 500
-      }
-    );
+      { success: false, error: "Gagal mengupload file" }, { status: 500, headers: getCorsHeaders() });
   }
 }
