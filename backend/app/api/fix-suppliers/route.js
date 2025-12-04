@@ -2,6 +2,20 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Mapping supplier lama ke baru
+const supplierMapping = {
+  "Supplier 1": "PT Sumber Elektronik Jaya",
+  "Supplier 2": "CV Makmur Abadi",
+  "Supplier 3": "PT Digital Niaga Indonesia",
+  "Supplier 4": "PT Panasonic Gobel Indonesia",
+  "Supplier 5": "CV Mitra Elektronik Sejahtera",
+  "Supplier 6": "PT Broco Electrical Indonesia",
+  "Supplier 7": "PT Schneider Electric Indonesia",
+  "Supplier 8": "PT Philips Indonesia",
+  "Supplier 9": "CV Uticon Elektrik",
+  "Supplier 10": "PT Krisbow Indonesia",
+};
+
 // GET - Fix/Update suppliers in database
 export async function GET(request) {
   const headers = {
@@ -26,8 +40,8 @@ export async function GET(request) {
 
     const results = [];
 
+    // 1. Update tabel suplier
     for (const supplier of suppliersData) {
-      // Update or create supplier (upsert)
       const updated = await prisma.suplier.upsert({
         where: { suplier_id: supplier.suplier_id },
         update: {
@@ -40,7 +54,29 @@ export async function GET(request) {
           contact: supplier.contact
         }
       });
-      results.push({ ...supplier, status: "updated", result: updated });
+      results.push({ table: "suplier", ...supplier, status: "updated" });
+    }
+
+    // 2. Update barang_masuk - ganti nama supplier lama ke baru
+    for (const [oldName, newName] of Object.entries(supplierMapping)) {
+      const updated = await prisma.barang_masuk.updateMany({
+        where: { supplier: oldName },
+        data: { supplier: newName }
+      });
+      if (updated.count > 0) {
+        results.push({ table: "barang_masuk", from: oldName, to: newName, count: updated.count });
+      }
+    }
+
+    // 3. Update barang_keluar - ganti nama supplier lama ke baru
+    for (const [oldName, newName] of Object.entries(supplierMapping)) {
+      const updated = await prisma.barang_keluar.updateMany({
+        where: { supplier: oldName },
+        data: { supplier: newName }
+      });
+      if (updated.count > 0) {
+        results.push({ table: "barang_keluar", from: oldName, to: newName, count: updated.count });
+      }
     }
 
     // Get all suppliers after fix
@@ -50,7 +86,7 @@ export async function GET(request) {
 
     return Response.json({
       success: true,
-      message: "Suppliers updated successfully",
+      message: "All suppliers updated successfully (suplier, barang_masuk, barang_keluar)",
       results: results,
       allSuppliers: allSuppliers
     }, { status: 200, headers });
