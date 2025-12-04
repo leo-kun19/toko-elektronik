@@ -1,7 +1,7 @@
 // API Service Layer
-const API_BASE_URL = import.meta.env.PROD 
-  ? "https://toko-elektronik-production.up.railway.app/api"  // Production: direct to Railway
-  : "http://localhost:3001/api";  // Development: local backend
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : "http://localhost:3001/api";
 
 // Helper function untuk fetch dengan error handling
 async function fetchAPI(endpoint, options = {}) {
