@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 const prisma = new PrismaClient();
 
 // GET - Get current user profile
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function GET(request) {
   try {
     // Untuk sementara, ambil admin pertama (karena belum ada session management)

@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 const prisma = new PrismaClient();
 
 // GET - Ambil 3 barang keluar terbaru
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function GET() {
   try {
     const barangKeluar = await prisma.barang_keluar.findMany({

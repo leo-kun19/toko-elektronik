@@ -2,7 +2,14 @@ import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
+import { handleCorsOptions } from "../lib/cors.js";
+
 // POST - Upload gambar
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function POST(request) {
   try {
     const formData = await request.formData();

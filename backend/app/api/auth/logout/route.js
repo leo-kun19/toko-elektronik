@@ -1,3 +1,10 @@
+import { handleCorsOptions } from "../lib/cors.js";
+
+
+export async function OPTIONS() {
+  return handleCorsOptions();
+}
+
 export async function POST() {
   try {
     console.log('✅ Logout successful');
