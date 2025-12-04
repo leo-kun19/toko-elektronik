@@ -1,4 +1,4 @@
-import { handleCorsOptions } from "../lib/cors.js";
+import { handleCorsOptions } from "../../../lib/cors.js";
 
 
 export async function OPTIONS() {
