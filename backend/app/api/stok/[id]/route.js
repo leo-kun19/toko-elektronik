@@ -129,11 +129,32 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE - Delete stok
+// DELETE - Delete stok (juga hapus barang masuk/keluar terkait)
 export async function DELETE(request, { params }) {
   try {
     const id = parseInt(params.id);
 
+    // Get produk name first
+    const produk = await prisma.produk.findUnique({
+      where: { produk_id: id }
+    });
+
+    if (!produk) {
+      return Response.json(
+        { success: false, error: "Produk tidak ditemukan" }, { status: 404, headers: getCorsHeaders() });
+    }
+
+    // Delete related barang_masuk by nama
+    const deletedMasuk = await prisma.barang_masuk.deleteMany({
+      where: { nama: produk.name }
+    });
+
+    // Delete related barang_keluar by nama
+    const deletedKeluar = await prisma.barang_keluar.deleteMany({
+      where: { nama: produk.name }
+    });
+
+    // Delete produk
     await prisma.produk.delete({
       where: { produk_id: id }
     });
@@ -141,7 +162,12 @@ export async function DELETE(request, { params }) {
     return Response.json(
       {
         success: true,
-        message: "Stok berhasil dihapus"
+        message: "Stok berhasil dihapus",
+        deleted: {
+          produk: produk.name,
+          barang_masuk: deletedMasuk.count,
+          barang_keluar: deletedKeluar.count
+        }
       }, { status: 200, headers: getCorsHeaders() });
   } catch (error) {
     console.error("Error deleting stok:", error);
