@@ -115,24 +115,33 @@ export default function StokPage() {
     return { totalPages, startIndex, currentData };
   };
 
+  // Helper untuk compare tanggal (handle berbagai format)
+  const matchDate = (itemDate, filterDateStr) => {
+    if (!filterDateStr) return true;
+    if (!itemDate) return false;
+    // Normalize both dates to YYYY-MM-DD format
+    const itemDateStr = itemDate.split('T')[0]; // Handle ISO format
+    return itemDateStr === filterDateStr;
+  };
+
   const filteredStok = stokBarang.filter(
     (s) =>
       s.nama.toLowerCase().includes(search.toLowerCase()) &&
-      (!filterDate || s.tanggal === filterDate) &&
+      matchDate(s.tanggal, filterDate) &&
       (!filterKategori.size || filterKategori.has(s.kategori)) &&
       (!filterSupplier.size || filterSupplier.has(s.supplier))
   );
   const filteredMasuk = barangMasuk.filter(
     (m) =>
       m.nama.toLowerCase().includes(search.toLowerCase()) &&
-      (!filterDateMasuk || m.tanggal === filterDateMasuk) &&
+      matchDate(m.tanggal, filterDateMasuk) &&
       (!filterKategori.size || filterKategori.has(m.kategori)) &&
       (!filterSupplier.size || filterSupplier.has(m.supplier))
   );
   const filteredKeluar = barangKeluar.filter(
     (k) =>
       k.nama.toLowerCase().includes(search.toLowerCase()) &&
-      (!filterDateKeluar || k.tanggal === filterDateKeluar) &&
+      matchDate(k.tanggal, filterDateKeluar) &&
       (!filterKategori.size || filterKategori.has(k.kategori)) &&
       (!filterSupplier.size || filterSupplier.has(k.supplier))
   );

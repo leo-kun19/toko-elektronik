@@ -474,7 +474,7 @@ export default function Dashboard() {
               <h3 className="text-lg font-semibold">Detail Barang Masuk</h3>
               <button onClick={closeModal} className="text-gray-500"><X size={18} /></button>
             </div>
-            <img src="/src/assets/produk.jpg" alt="Produk" className="w-full h-48 object-cover rounded-md mb-4" />
+            <img src={activeItem.gambar || "/api/images/default.jpg"} alt="Produk" className="w-full h-48 object-cover rounded-md mb-4" onError={(e) => { e.target.src = "/api/images/default.jpg"; }} />
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div><strong>Nama Produk:</strong></div><div>{activeItem.nama}</div>
               <div><strong>Kategori:</strong></div><div>{activeItem.kategori}</div>
@@ -505,7 +505,7 @@ export default function Dashboard() {
               <h3 className="text-lg font-semibold">Hapus Barang Masuk?</h3>
               <button onClick={closeModal} className="text-gray-500"><X size={18} /></button>
             </div>
-            <img src="/src/assets/produk.jpg" alt="Produk" className="w-full h-32 object-cover rounded-md mb-4" />
+            <img src={activeItem.gambar || "/api/images/default.jpg"} alt="Produk" className="w-full h-32 object-cover rounded-md mb-4" onError={(e) => { e.target.src = "/api/images/default.jpg"; }} />
             <p>Hapus <strong>{activeItem.nama}</strong>? (Qty: {activeItem.qty})</p>
             <div className="mt-6 flex gap-3">
               <Button variant="outline" onClick={closeModal}>Batal</Button>
