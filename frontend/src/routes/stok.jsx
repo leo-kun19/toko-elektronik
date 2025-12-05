@@ -249,7 +249,7 @@ export default function StokPage() {
       }
       
       if (data.type === "baru") {
-        // Tambah barang baru
+        // Tambah barang baru - backend akan otomatis catat ke barang_masuk
         await addStokBarang({
           brand: data.brand,
           nama: data.nama,
@@ -257,19 +257,7 @@ export default function StokPage() {
           supplier: data.supplier,
           deskripsi: data.deskripsi,
           harga: data.harga,
-          stok: data.stok,
-          tanggal: data.tanggal,
-          gambar: gambarPath,
-        });
-        
-        // Catat sebagai barang masuk (stok awal)
-        await addBarangMasuk({
-          nama: data.nama,
-          kategori: data.kategori,
-          supplier: data.supplier,
-          deskripsi: `Stok awal: ${data.deskripsi || data.nama}`,
-          harga: data.harga,
-          qty: data.stok,
+          stok: data.stok, // Stok langsung di-set, backend handle barang_masuk
           tanggal: data.tanggal,
           gambar: gambarPath,
         });
@@ -325,22 +313,11 @@ export default function StokPage() {
         gambarPath = `/src/assets/uploads/${selectedFile.name}`;
       }
 
+      // Backend akan otomatis catat ke barang_masuk jika stok > 0
       await addStokBarang({
         ...stokForm,
         stok: qty,
         harga,
-        tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
-        gambar: gambarPath,
-      });
-
-      await addBarangMasuk({
-        nama: stokForm.nama,
-        kategori: stokForm.kategori,
-        supplier: stokForm.supplier,
-        deskripsi: stokForm.deskripsi,
-        qty,
-        harga,
-        total: qty * harga,
         tanggal: stokForm.tanggal || new Date().toISOString().split("T")[0],
         gambar: gambarPath,
       });

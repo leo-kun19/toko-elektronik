@@ -130,12 +130,15 @@ export async function POST(request) {
     }
 
     // Buat produk
+    const stokNum = parseInt(stok) || 0;
+    const hargaNum = parseFloat(harga) || 0;
+    
     const produkData = {
       name: nama,
       description: deskripsi || null,
       image: gambar || null,
-      price: parseFloat(harga) || 0,
-      stock: parseInt(stok) || 0,
+      price: hargaNum,
+      stock: stokNum,
       categori_id: kategoriId,
       suplier_id: supplierId
     };
@@ -149,6 +152,24 @@ export async function POST(request) {
       }
     });
     console.log("Produk created:", produk.produk_id);
+
+    // Otomatis catat ke barang_masuk jika stok > 0
+    if (stokNum > 0) {
+      await prisma.barang_masuk.create({
+        data: {
+          nama: nama,
+          kategori: kategori || "",
+          supplier: supplier || "",
+          deskripsi: deskripsi || null,
+          harga: hargaNum,
+          qty: stokNum,
+          total: stokNum * hargaNum,
+          tanggal: tanggal ? new Date(tanggal) : new Date(),
+          gambar: gambar || null
+        }
+      });
+      console.log("Barang masuk recorded for new product");
+    }
 
     // Transform ke format frontend
     const result = {
