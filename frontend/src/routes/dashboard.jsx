@@ -288,16 +288,34 @@ export default function Dashboard() {
 
       {/* === STAT CARDS === */}
       <div className="grid grid-cols-4 gap-6">
-        {[
-          { title: "Pengeluaran", value: `Rp ${barangMasuk.reduce((a,b)=>a+b.total,0).toLocaleString()}`, color: "bg-gradient-to-br from-blue-600 to-blue-400" },
-          { title: "Pemasukan", value: `Rp ${barangKeluar.reduce((a,b)=>a+b.total,0).toLocaleString()}`, color: "bg-gradient-to-br from-blue-600 to-blue-400" },
-          { title: "Barang Keluar", value: barangKeluar.reduce((a,b)=>a+b.qty,0), color: "bg-gradient-to-br from-blue-600 to-blue-400" },
-          { title: "Barang Masuk", value: barangMasuk.reduce((a,b)=>a+b.qty,0), color: "bg-gradient-to-br from-blue-600 to-blue-400" },
-        ].map((s,i)=>(
-          <Card key={i} className={`rounded-2xl text-white shadow-lg bg-gradient-to-r ${s.color}`}>
-            <CardContent className="p-6"><p className="text-sm opacity-90">{s.title}</p><p className="text-2xl font-bold mt-1">{s.value}</p></CardContent>
-          </Card>
-        ))}
+        {(() => {
+          // Filter data berdasarkan tanggal jika ada
+          const filterByDate = (items) => {
+            if (!startDate && !endDate) return items;
+            return items.filter(item => {
+              const itemDate = new Date(item.tanggal);
+              const start = startDate ? new Date(startDate) : null;
+              const end = endDate ? new Date(endDate) : null;
+              if (start && itemDate < start) return false;
+              if (end && itemDate > end) return false;
+              return true;
+            });
+          };
+          
+          const filteredMasuk = filterByDate(barangMasuk);
+          const filteredKeluar = filterByDate(barangKeluar);
+          
+          return [
+            { title: "Pengeluaran", value: `Rp ${filteredMasuk.reduce((a,b)=>a+(b.total||0),0).toLocaleString()}`, color: "bg-gradient-to-br from-blue-600 to-blue-400" },
+            { title: "Pemasukan", value: `Rp ${filteredKeluar.reduce((a,b)=>a+(b.total||0),0).toLocaleString()}`, color: "bg-gradient-to-br from-blue-600 to-blue-400" },
+            { title: "Barang Keluar", value: filteredKeluar.reduce((a,b)=>a+(b.qty||0),0), color: "bg-gradient-to-br from-blue-600 to-blue-400" },
+            { title: "Barang Masuk", value: filteredMasuk.reduce((a,b)=>a+(b.qty||0),0), color: "bg-gradient-to-br from-blue-600 to-blue-400" },
+          ].map((s,i)=>(
+            <Card key={i} className={`rounded-2xl text-white shadow-lg bg-gradient-to-r ${s.color}`}>
+              <CardContent className="p-6"><p className="text-sm opacity-90">{s.title}</p><p className="text-2xl font-bold mt-1">{s.value}</p></CardContent>
+            </Card>
+          ));
+        })()}
       </div>
 
       {/* === CHARTS + TOP === */}
