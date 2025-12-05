@@ -221,7 +221,13 @@ export default function StokPage() {
   };
 
   // ======= Handler untuk Modal Baru =======
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const handleTambahBarangSubmit = async (data) => {
+    // Prevent double submit
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     try {
       let gambarPath = data.gambar;
       
@@ -256,12 +262,12 @@ export default function StokPage() {
           gambar: gambarPath,
         });
         
-        // Juga catat sebagai barang masuk
+        // Catat sebagai barang masuk (stok awal)
         await addBarangMasuk({
           nama: data.nama,
           kategori: data.kategori,
           supplier: data.supplier,
-          deskripsi: `Stok awal: ${data.deskripsi}`,
+          deskripsi: `Stok awal: ${data.deskripsi || data.nama}`,
           harga: data.harga,
           qty: data.stok,
           tanggal: data.tanggal,
@@ -303,6 +309,8 @@ export default function StokPage() {
       refreshData();
     } catch (error) {
       alert("Error: " + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
